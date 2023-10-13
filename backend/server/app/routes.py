@@ -1,4 +1,4 @@
-from app import applications
+from backend.server.app import app
 
 @app.route('/')
 @app.route('/index')
