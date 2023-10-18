@@ -1,19 +1,19 @@
 ## Server Endpoints
 
 PUT /sensors
-{imu, vibration, location, crash, userID}
+{trip_id, acceleration_x, acceleration_y, acceleration_z, gyroscope_x, gyroscope_y, gyroscope_z, vibration, latitude, longitude, crash, user_id}
 
 POST /trip/start
-{userID, bikeType}
+{user_id, name} # TODO: bikeType
 
 POST /trip/end
-{userID}
+{trip_id}
 
 IMU: rotation xyz, acceleration xyz
 vibration: average, max since last send
 location: current location
 crash: yes/no
-userID: id
+user_id: id
 bikeType: {city, trekking, mountain, racing}
 
 the crash is detected on the esp using simple rules:
