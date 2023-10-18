@@ -1,19 +1,18 @@
 import psycopg2
 import sys
+import os
 import pandas as pd
 
 # TODO: Database connection
-HOST = 'localhost'
-PORT = 0  # currently not needed
-DATABASE = 'nextgenbike'
-USER = ""
-PASSWORD = ""
-
 
 def connect():
     try:
         print('Connecting to the database')
-        conn = psycopg2.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD)
+        conn = psycopg2.connect(
+            host=os.environ['DB_PATH'],
+            database=os.environ['DB_NAME'],
+            user=os.environ['DB_USERNAME'],
+            password=os.environ['DB_PASSWORD'])
     except (Exception, psycopg2.DatabaseError) as e:
         print(e)
         sys.exit(1)
