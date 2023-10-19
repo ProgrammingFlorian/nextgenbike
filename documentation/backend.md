@@ -20,3 +20,7 @@ the crash is detected on the esp using simple rules:
 1. Instantaneous stop
 2. falling to the side
 3. vibration
+
+What to do with crash data: 
+- send GPS position
+- phone notification
