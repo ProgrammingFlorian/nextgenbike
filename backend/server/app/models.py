@@ -2,6 +2,7 @@ from datetime import datetime
 
 from app import db
 
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
@@ -10,6 +11,7 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,6 +27,7 @@ class Trip(db.Model):
     def __repr__(self):
         return '<Trip {}>'.format(self.name)
 
+
 class Vibration(db.Model):
     time = db.Column(db.DateTime, primary_key=True, default=datetime.utcnow)
     intensity = db.Column(db.Integer)
@@ -32,6 +35,7 @@ class Vibration(db.Model):
 
     def __repr__(self):
         return '<Vibration at {} with intensity>'.format(self.time, self.intensity)
+
 
 class GPS(db.Model):
     time = db.Column(db.DateTime, primary_key=True, default=datetime.utcnow)
@@ -41,6 +45,7 @@ class GPS(db.Model):
 
     def __repr__(self):
         return '<Location at {} with lat={} and lng={}>'.format(self.time, self.latitude, self.longitude)
+
 
 class IMU(db.Model):
     time = db.Column(db.DateTime, primary_key=True, default=datetime.utcnow)
