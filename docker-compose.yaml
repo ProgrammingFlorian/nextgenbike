@@ -1,0 +1,6 @@
+version: '2'
+
+services:
+  backend:
+    image: backend-app
+    build: backend
