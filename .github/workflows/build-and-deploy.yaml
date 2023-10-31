@@ -14,7 +14,7 @@ on:
 
 env:
   REGISTRY: "registry.digitalocean.com/nextgenbike-backend"
-  IMAGE_NAME: "backend"
+  IMAGE_NAME: "nextgenbike-backend"
 
 
 jobs:
