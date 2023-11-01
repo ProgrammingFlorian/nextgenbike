@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from app import app, db
-from app.models import Trip, Vibration, GPS, IMU
+from models import Trip, Vibration, GPS, IMU
 from flask import request
 
 
