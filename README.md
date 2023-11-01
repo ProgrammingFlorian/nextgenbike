@@ -3,7 +3,7 @@ Project for the NUS Module "Internet of Things"
 
 ## Installation
 
-`pip install flask flask-sqlalchemy`
+`pip install flask flask-sqlalchemy flask_migrate`
 
 ## Getting started
 
