@@ -7,4 +7,4 @@ COPY ./cloudprocessing/*.py /app/cloudprocessing/
 COPY ./server /app/server/
 
 # ENV FLASK_APP=server/app/app.py
-ENTRYPOINT python app.py
+ENTRYPOINT python server/app/app.py
