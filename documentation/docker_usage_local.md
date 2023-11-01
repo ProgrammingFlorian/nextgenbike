@@ -8,11 +8,11 @@ $ docker-compose build
 Tag:  
 $ docker tag backend-app backend
 
-Run: 
-$ docker run -d -p 80:80 backend
+Run:   
+$ docker run -d -p 8000:8000 backend
 
 Test:  
-$ curl localhost:80
+$ curl localhost:8000
 
 Stop: 
 $ docker stop backend

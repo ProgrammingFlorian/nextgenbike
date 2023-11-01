@@ -3,8 +3,9 @@ COPY requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install -r requirements.txt
 
-COPY ./cloudprocessing/*.py /app/cloudprocessing/
-COPY ./server /app/server/
+COPY ./cloudprocessing/*.py /cloudprocessing/
+COPY ./server server/
 
-# ENV FLASK_APP=server/app/app.py
-ENTRYPOINT python server/app/app.py
+RUN chmod u+x server/entrypoint.sh
+EXPOSE 8000
+ENTRYPOINT ["./entrypoint.sh"]

@@ -1,17 +1,21 @@
 import json
 from datetime import datetime
-from app import app, db
-from models import Trip, Vibration, GPS, IMU
-from flask import request
+
+from flask import request, Blueprint
+
+from app.extensions import db
+from app.models import Trip, Vibration, GPS, IMU
+
+url = Blueprint('urls', __name__)
 
 
-@app.route('/')
-@app.route('/index')
+@url.route('/')
+@url.route('/index')
 def index():
     return 'Hello, World!'
 
 
-@app.route('/sensor', methods=['PUT'])
+@url.route('/sensor', methods=['PUT'])
 def sensor():
     data = json.loads(request.data)
 
@@ -23,13 +27,12 @@ def sensor():
     db.session.add(v)
     db.session.add(gps)
     db.session.add(imu)
-
     db.session.commit()
 
     return 'Data submitted'
 
 
-@app.route('/trip/start', methods=['POST'])
+@url.route('/trip/start', methods=['POST'])
 def trip_start():
     data = json.loads(request.data)
 
@@ -40,7 +43,7 @@ def trip_start():
     return 'New trip created'
 
 
-@app.route('/trip/end', methods=['POST'])
+@url.route('/trip/end', methods=['POST'])
 def trip_end():
     data = json.loads(request.data)
 
@@ -48,3 +51,5 @@ def trip_end():
     trip.end = datetime.utcnow()
 
     db.session.commit()
+
+    return 'Trip finished'
