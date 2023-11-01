@@ -9,7 +9,7 @@ Tag:
 $ docker tag backend-app backend
 
 Run:   
-$ docker run -d -p 8000:8000 backend
+$ docker run -p 80:80 backend
 
 Test:  
 $ curl localhost:8000
