@@ -1,10 +1,10 @@
 # Docker Usage
-## Build
+## Local
 Make sure you are in the nextgenbike folder  
-To build:  
+### Local Test
+Build:  
 $ docker-compose build
 
-## Local Test
 Tag:  
 $ docker tag backend-app backend
 
@@ -24,7 +24,9 @@ delete all images
 $ docker rmi -f $(docker images -aq)
 
 ## Push to Digitalocean:
-from local Laptop
+Build:  
+$ docker-compose build
+
 Login  
 $ docker login -u $PASSKEY$ registry.digitalocean.com
 $ doctl registry login
