@@ -14,7 +14,7 @@ on:
 
 env:
   REGISTRY: "registry.digitalocean.com/nextgenbike-backend"
-  IMAGE_NAME: "nextgenbike-backend"
+  IMAGE_NAME: "backend-image"
 
 
 jobs:
@@ -59,6 +59,7 @@ jobs:
             docker rm $(echo $IMAGE_NAME)
             # Run a new container from a new image
             docker run -d \
+            -p 80:80 \
             --restart always \
             --name $(echo $IMAGE_NAME) \
             $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
