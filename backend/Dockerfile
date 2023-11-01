@@ -6,5 +6,5 @@ RUN pip install -r requirements.txt
 COPY ./cloudprocessing/*.py /app/cloudprocessing/
 COPY ./server /app/server/
 
-ENV FLASK_APP=server/app/__init__.py
-CMD flask run
+# ENV FLASK_APP=server/app/app.py
+ENTRYPOINT python app.py
