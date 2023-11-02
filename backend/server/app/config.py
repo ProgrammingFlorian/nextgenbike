@@ -1,10 +1,4 @@
-import os
-
-basedir = os.path.abspath(os.path.dirname(__file__))
-
-
 class Config(object):
     # ...
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-                              'sqlite:///' + os.path.join(basedir, 'app.db')
+    SQLALCHEMY_DATABASE_URI = "postgresql://docker:s3cr3t@postgres:5432/data_db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
