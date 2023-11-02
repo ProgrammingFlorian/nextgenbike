@@ -6,7 +6,13 @@ from app.models import Trip, Vibration, GPS, IMU
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
 
+from backend.server.app.models import User
+
 url = Blueprint('urls', __name__)
+
+
+class CreateUserSchema(Schema):
+    username = fields.String(required=True)
 
 
 class TripStartSchema(Schema):
@@ -39,6 +45,23 @@ class SensorSchema(Schema):
 @url.route('/index')
 def index():
     return 'Hello, World!'
+
+
+@url.route('/users', methods=['POST'])
+def trip_start():
+    schema = CreateUserSchema()
+    try:
+        data = schema.load(request.json)
+    except ValidationError as err:
+        return json.dumps(err.messages), 400
+
+    user = User(username=data['username'])
+    db.session.add(user)
+    db.session.commit()
+
+    response = json.dumps({"user_id": user.id})
+
+    return response, 200
 
 
 @url.route('/trip/start', methods=['POST'])
