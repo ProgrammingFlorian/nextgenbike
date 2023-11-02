@@ -5,6 +5,7 @@ from app.extensions import db
 from app.models import Trip, Vibration, GPS, IMU
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
+from sqlalchemy import event, DDL
 
 from backend.server.app.models import User
 
@@ -40,6 +41,8 @@ class SensorSchema(Schema):
     gyroscope_y = fields.List(fields.Float, required=True)
     gyroscope_z = fields.List(fields.Float, required=True)
 
+event.listen(User.__table__, 'after_create',
+            DDL("""INSERT INTO user (id, name) VALUES (NULL, 'hanspeter'), (NULL, 'turbogunter')"""))
 
 @url.route('/')
 @url.route('/index')
