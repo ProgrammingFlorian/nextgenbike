@@ -4,3 +4,8 @@ services:
   backend:
     image: backend-app
     build: backend
+    volumes:
+      - data_db:/app/server/etc/
+
+volumes:
+  data_db:
