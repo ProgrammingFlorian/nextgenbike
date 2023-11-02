@@ -40,7 +40,7 @@ def trip_start():
     db.session.add(trip)
     db.session.commit()
 
-    return 'New trip created'
+    return json.dumps({"trip_id": trip.id})
 
 
 @url.route('/trip/end', methods=['POST'])
