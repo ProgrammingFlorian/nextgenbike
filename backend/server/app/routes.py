@@ -40,6 +40,7 @@ def trip_start():
     db.session.add(trip)
     db.session.commit()
 
+    print("Added new trip to the database with trip_id " + str(trip.id))
     return json.dumps({"trip_id": trip.id})
 
 
@@ -52,4 +53,5 @@ def trip_end():
 
     db.session.commit()
 
+    print("Trip ")
     return 'Trip finished'
