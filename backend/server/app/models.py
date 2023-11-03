@@ -20,42 +20,30 @@ class Trip(db.Model):
     name = db.Column(db.String(64))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    vibrations = db.relationship('Vibration', backref='trip', lazy='dynamic')
-    gps = db.relationship('GPS', backref='trip', lazy='dynamic')
-    imus = db.relationship('IMU', backref='trip', lazy='dynamic')
+    sensors = db.relationship('Sensors', backref='trip', lazy='dynamic')
 
     def __repr__(self):
         return '<Trip {}>'.format(self.name)
 
 
-class Vibration(db.Model):
-    time = db.Column(db.DateTime, primary_key=True, default=datetime.utcnow)
-    intensity = db.Column(db.Integer)
+class Sensors(db.Model):
+    time = db.Column(db.DateTime, primary_key=True)
     trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'))
 
-    def __repr__(self):
-        return '<Vibration at {} with intensity>'.format(self.time, self.intensity)
+    vibration = db.Column(db.Integer)
 
-
-class GPS(db.Model):
-    time = db.Column(db.DateTime, primary_key=True, default=datetime.utcnow)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'))
 
-    def __repr__(self):
-        return '<Location at {} with lat={} and lng={}>'.format(self.time, self.latitude, self.longitude)
-
-
-class IMU(db.Model):
-    time = db.Column(db.DateTime, primary_key=True, default=datetime.utcnow)
     acceleration_x = db.Column(db.Float)
     acceleration_y = db.Column(db.Float)
     acceleration_z = db.Column(db.Float)
     gyroscope_x = db.Column(db.Float)
     gyroscope_y = db.Column(db.Float)
     gyroscope_z = db.Column(db.Float)
-    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'))
+
+    crash = db.Column(db.Integer, nullable=True)
+    terrain = db.Column(db.Integer, nullable=True)
 
     def __repr__(self):
-        return '<IMU at {}>'.format(self.time)
+        return f"<Sensor data at {self.time} on trip {self.trip_id}"

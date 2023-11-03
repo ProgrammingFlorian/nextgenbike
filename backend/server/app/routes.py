@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from app.extensions import db
-from app.models import Trip, Vibration, GPS, IMU
+from models import Sensors
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
 from sqlalchemy import event, DDL
@@ -41,8 +41,9 @@ class SensorSchema(Schema):
     gyroscope_y = fields.List(fields.Float, required=True)
     gyroscope_z = fields.List(fields.Float, required=True)
 
-event.listen(User.__table__, 'after_create',
-            DDL("""INSERT INTO user (id, name) VALUES (NULL, 'hanspeter'), (NULL, 'turbogunter')"""))
+    crash = fields.Integer(required=False)
+    terrain = fields.Integer(required=False)
+
 
 @url.route('/')
 @url.route('/index')
@@ -110,14 +111,20 @@ def sensor():
     except ValidationError as err:
         return json.dumps(err.messages), 400
 
-    v = Vibration(data['vibration'], data['trip_id'])
-    gps = GPS(data['latitude'], data['longitude'], data['trip_id'])
-    imu = IMU(data['acceleration_x'], data['acceleration_y'], data['acceleration_z'], data['gyroscope_x'],
-              data['gyroscope_y'], data['gyroscope_z'], data['trip_id'])
+    sensor_row = Sensors(data['time'], data['trip_id'], data['vibration'], data['latitude'], data['longitude'],
+                     data['acceleration_x'], data['acceleration_y'], data['acceleration_z'], data['gyroscope_x'],
+                     data['gyroscope_y'], data['gyroscope_z'])
 
-    db.session.add(v)
-    db.session.add(gps)
-    db.session.add(imu)
+    db.session.add(sensor_row)
     db.session.commit()
 
     return 'Submitted sensor data', 200
+
+
+@url.route('/sensor', methods=['GET'])
+def get_sensor():
+    sensors = Sensors.query.all()
+
+    response = json.dumps(sensors)
+
+    return response, 200
