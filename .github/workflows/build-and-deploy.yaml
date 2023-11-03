@@ -58,7 +58,7 @@ jobs:
             # Remove old container
             #docker rm $(echo $IMAGE_NAME)
             # Stop running container
-            docker-compose down
+            docker compose down
             # Run a new container from a new image
             #docker run -d \
             #-p 80:80 \
@@ -66,4 +66,4 @@ jobs:
             #--name $(echo $IMAGE_NAME) \
             #$(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
             docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
-            docker-compose up -d
+            docker compose up -d
