@@ -2,12 +2,9 @@ import json
 from datetime import datetime
 
 from app.extensions import db
-from models import Sensors
+from app.models import Sensors
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
-from sqlalchemy import event, DDL
-
-from backend.server.app.models import User
 
 url = Blueprint('urls', __name__)
 
@@ -52,7 +49,7 @@ def index():
 
 
 @url.route('/users', methods=['POST'])
-def trip_start():
+def users():
     schema = CreateUserSchema()
     try:
         data = schema.load(request.json)

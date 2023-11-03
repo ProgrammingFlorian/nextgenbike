@@ -1,8 +1,7 @@
-from flask import Flask
-
 import app.routes as routes
 from app.config import Config
 from app.extensions import db, migrate
+from flask import Flask
 
 
 def create_app():
