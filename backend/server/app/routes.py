@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from app.extensions import db
-from app.models import Sensors
+from app.models import User, Trip, Sensors
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
 
@@ -54,7 +54,9 @@ def users():
     try:
         data = schema.load(request.json)
     except ValidationError as err:
+        print(f"ValidationError {err}")
         return json.dumps(err.messages), 400
+    print(f"Received request with payload {data}")
 
     user = User(username=data['username'])
     db.session.add(user)
@@ -72,6 +74,7 @@ def trip_start():
         data = schema.load(request.json)
     except ValidationError as err:
         return json.dumps(err.messages), 400
+    print(f"Received request with payload {data}")
 
     trip = Trip(name=data['name'], user_id=data['user_id'])
     db.session.add(trip)
@@ -89,6 +92,7 @@ def trip_end():
         data = schema.load(request.json)
     except ValidationError as err:
         return json.dumps(err.messages), 400
+    print(f"Received request with payload {data}")
 
     trip = db.session.execute(db.select(Trip).filter_by(id=data['trip_id'])).scalar_one()
     trip.end = datetime.utcnow()
@@ -107,12 +111,16 @@ def sensor():
         data = schema.load(request.json)
     except ValidationError as err:
         return json.dumps(err.messages), 400
+    print(f"Received request with payload {data}")
 
-    sensor_row = Sensors(data['time'], data['trip_id'], data['vibration'], data['latitude'], data['longitude'],
-                     data['acceleration_x'], data['acceleration_y'], data['acceleration_z'], data['gyroscope_x'],
-                     data['gyroscope_y'], data['gyroscope_z'])
+    for i in range(len(data['time'])):
+        sensor_row = Sensors(time=data['time'][i], trip_id=data['trip_id'], vibration=data['vibration'][i],
+                             latitude=data['latitude'][i], longitude=data['longitude'][i],
+                             acceleration_x=data['acceleration_x'][i], acceleration_y=data['acceleration_y'][i],
+                             acceleration_z=data['acceleration_z'][i], gyroscope_x=data['gyroscope_x'][i],
+                             gyroscope_y=data['gyroscope_y'][i], gyroscope_z=data['gyroscope_z'][i])
+        db.session.add(sensor_row)
 
-    db.session.add(sensor_row)
     db.session.commit()
 
     return 'Submitted sensor data', 200
@@ -122,6 +130,6 @@ def sensor():
 def get_sensor():
     sensors = Sensors.query.all()
 
-    response = json.dumps(sensors)
+    response = json.dumps([sens.as_dict() for sens in sensors], default=str)
 
     return response, 200
