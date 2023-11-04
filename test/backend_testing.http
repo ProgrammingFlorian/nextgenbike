@@ -1,11 +1,20 @@
-### Correct trip start
+### Create /user
+POST http://localhost:5000/users
+Content-Type: application/json
+
+{
+  "username": "Peter"
+}
+
+
+### Correct /trip/start
 
 POST http://localhost:5000/trip/start
 Content-Type: application/json
 
 {
   "name": "My first bike adventure",
-  "user_id": 123
+  "user_id": 1
 }
 
 ### /trip/start wrong parameters
@@ -18,3 +27,46 @@ Content-Type: application/json
   "user": "Incorrect"
 }
 
+### GET /sensor
+
+GET http://localhost:5000/sensor
+
+### Put /sensor
+
+PUT http://localhost:5000/sensor
+Content-Type: application/json
+
+{
+  "time": ["2014-12-22T03:12:58.019067+00:00", "2014-12-22T03:12:58.019057+00:00", "2014-12-22T03:12:58.019047+00:00", "2014-12-22T03:12:58.019037+00:00"],
+  "trip_id": 1,
+  "vibration": [1.0, 0.5, 2.0, 5.0],
+  "latitude": [-5, -4.9, -4.8, -4.7],
+  "longitude": [1, 1.9, 2.8, 3.7],
+  "acceleration_x": [1, 0, 5, 3],
+  "acceleration_y": [3, 8, 4, 1],
+  "acceleration_z": [6, 3, 6, 2],
+  "gyroscope_x": [3, 2, 5, 3],
+  "gyroscope_y": [7, 0, 2, 5],
+  "gyroscope_z": [9, 1, 0, 8]
+}
+
+### Put /sensor with crash and terrain
+
+PUT http://localhost:5000/sensor
+Content-Type: application/json
+
+{
+  "time": "1256953732",
+  "trip_id": 1,
+  "vibration": [1.0, 0.5, 2.0, 5.0],
+  "latitude": [-5, -4.9, -4.8, -4.7],
+  "longitude": [1, 1.9, 2.8, 3.7],
+  "acceleration_x": [1, 0, 5, 3],
+  "acceleration_y": [3, 8, 4, 1],
+  "acceleration_z": [6, 3, 6, 2],
+  "gyroscope_x": [3, 2, 5, 3],
+  "gyroscope_y": [7, 0, 2, 5],
+  "gyroscope_z": [9, 1, 0, 8],
+  "crash": 0,
+  "terrain": 2
+}

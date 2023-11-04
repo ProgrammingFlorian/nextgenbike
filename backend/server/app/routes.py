@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from app.extensions import db
-from app.models import Trip, Vibration, GPS, IMU, User
+from app.models import User, Trip, Sensors
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
 
@@ -38,6 +38,9 @@ class SensorSchema(Schema):
     gyroscope_y = fields.List(fields.Float, required=True)
     gyroscope_z = fields.List(fields.Float, required=True)
 
+    crash = fields.Integer(required=False)
+    terrain = fields.Integer(required=False)
+
 
 @url.route('/')
 @url.route('/index')
@@ -51,7 +54,9 @@ def users():
     try:
         data = schema.load(request.json)
     except ValidationError as err:
+        print(f"ValidationError {err}")
         return json.dumps(err.messages), 400
+    print(f"Received request with payload {data}")
 
     user = User(username=data['username'])
     db.session.add(user)
@@ -69,6 +74,7 @@ def trip_start():
         data = schema.load(request.json)
     except ValidationError as err:
         return json.dumps(err.messages), 400
+    print(f"Received request with payload {data}")
 
     trip = Trip(name=data['name'], user_id=data['user_id'])
     db.session.add(trip)
@@ -86,6 +92,7 @@ def trip_end():
         data = schema.load(request.json)
     except ValidationError as err:
         return json.dumps(err.messages), 400
+    print(f"Received request with payload {data}")
 
     trip = db.session.execute(db.select(Trip).filter_by(id=data['trip_id'])).scalar_one()
     trip.end = datetime.utcnow()
@@ -104,15 +111,25 @@ def sensor():
         data = schema.load(request.json)
     except ValidationError as err:
         return json.dumps(err.messages), 400
+    print(f"Received request with payload {data}")
 
-    v = Vibration(data['vibration'], data['trip_id'])
-    gps = GPS(data['latitude'], data['longitude'], data['trip_id'])
-    imu = IMU(data['acceleration_x'], data['acceleration_y'], data['acceleration_z'], data['gyroscope_x'],
-              data['gyroscope_y'], data['gyroscope_z'], data['trip_id'])
+    for i in range(len(data['time'])):
+        sensor_row = Sensors(time=data['time'][i], trip_id=data['trip_id'], vibration=data['vibration'][i],
+                             latitude=data['latitude'][i], longitude=data['longitude'][i],
+                             acceleration_x=data['acceleration_x'][i], acceleration_y=data['acceleration_y'][i],
+                             acceleration_z=data['acceleration_z'][i], gyroscope_x=data['gyroscope_x'][i],
+                             gyroscope_y=data['gyroscope_y'][i], gyroscope_z=data['gyroscope_z'][i])
+        db.session.add(sensor_row)
 
-    db.session.add(v)
-    db.session.add(gps)
-    db.session.add(imu)
     db.session.commit()
 
     return 'Submitted sensor data', 200
+
+
+@url.route('/sensor', methods=['GET'])
+def get_sensor():
+    sensors = Sensors.query.all()
+
+    response = json.dumps([sens.as_dict() for sens in sensors], default=str)
+
+    return response, 200
