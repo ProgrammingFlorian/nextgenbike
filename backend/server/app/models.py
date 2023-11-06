@@ -28,7 +28,7 @@ class Trip(db.Model):
 
 class Sensors(db.Model):
     time = db.Column(db.DateTime, primary_key=True)
-    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'))
+    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'), primary_key=True)
 
     vibration = db.Column(db.Integer)
 
@@ -46,4 +46,7 @@ class Sensors(db.Model):
     terrain = db.Column(db.Integer, nullable=True)
 
     def __repr__(self):
-        return f"<Sensor data at {self.time} on trip {self.trip_id}"
+        return f"Sensor data at {self.time} on trip {self.trip_id}"
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
