@@ -2,14 +2,14 @@ import torch
 import numpy as np
 
 
-def compute_accuracy(model, loader, device, criterion):
+def compute_accuracy(model, loader, criterion, device=None):
     loss = 0.0
     class_c = list(0. for _ in range(10))
     class_t = list(0. for _ in range(10))
 
     model.eval()
     for i, (x, y) in enumerate(loader):
-        (x, y) = (x.to(device), y.to(torch.float32).to(device))  # send the input to the device
+        # (x, y) = (x.to(device), y.to(torch.float32).to(device))  # send the input to the device
         output = model(x)
 
         temp_loss = criterion(output, y)  # calculate the batch loss
