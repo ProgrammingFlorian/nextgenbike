@@ -3,7 +3,7 @@ import torch
 import backend.config as config
 
 
-def compute_accuracy(model, loader, criterion, n_cols):
+def compute_accuracy(model, loader, criterion):
     loss = 0.0
     class_c = list(0. for _ in range(len(config.classes)))
     class_t = list(0. for _ in range(len(config.classes)))
@@ -13,8 +13,8 @@ def compute_accuracy(model, loader, criterion, n_cols):
         hidden = model.initHidden()
 
         for data_row in training_input:
-            for i in range(0, len(data_row), n_cols):
-                model_input = data_row[None, i:i + n_cols].float()
+            for i in range(0, len(data_row), config.n_training_cols):
+                model_input = data_row[None, i:i + config.n_training_cols].float()
                 output, hidden = model(model_input, hidden)
 
         loss += criterion(output, target)  # calculate the batch loss
