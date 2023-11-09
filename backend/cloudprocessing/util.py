@@ -1,5 +1,5 @@
-import numpy as np
 import torch
+
 import backend.config as config
 
 
@@ -22,13 +22,9 @@ def compute_accuracy(model, loader, criterion, n_cols):
         # convert output probabilities to predicted class
         _, pred = torch.max(output, 1)
         _, y = torch.max(target, 1)
-        # compare predictions to true label
-        correct_tensor = pred.eq(y)
-        correct = np.squeeze(correct_tensor)
 
-        for j in range(len(y.data)):  # calculate training accuracy for each object class
-            label = y.data[j]
-            class_c[label] += correct[j].item()
-            class_c[label] += 1
+        if pred == y:
+            class_c[y] += 1
+        class_t[y] += 1
 
     return loss, class_c, class_t
