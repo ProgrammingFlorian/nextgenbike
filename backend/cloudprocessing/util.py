@@ -17,8 +17,7 @@ def compute_accuracy(model, loader, criterion, n_cols):
                 model_input = data_row[None, i:i + n_cols].float()
                 output, hidden = model(model_input, hidden)
 
-        temp_loss = criterion(output, target)  # calculate the batch loss
-        temp_loss += temp_loss.item() * training_input.size(0)  # update training loss
+        loss += criterion(output, target)  # calculate the batch loss
         # convert output probabilities to predicted class
         _, pred = torch.max(output, 1)
         _, y = torch.max(target, 1)
