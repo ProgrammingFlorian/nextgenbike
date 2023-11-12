@@ -1,5 +1,7 @@
 #define SWITCH 4
 #define vibrationPin 16 
+#define RXD1 16 // Connect NEO-M8 TX to ESP32's RX PIN (16)
+#define TXD1 17 // Connect NEO-M8 RX to ESP32'S TX PIN (17)
 
 #include <vector>
 #include "Wire.h"
@@ -10,6 +12,7 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <TimeLib.h>
+#include <TinyGPSPlus.h>
 
 std::vector<float> latitudeData;
 std::vector<float> longitudeData;
@@ -25,6 +28,7 @@ std::vector<String> dateTimeData;
 ADXL345 accel;
 ITG3200 gyro;
 WiFiUDP ntpUDP;
+TinyGPSPlus gps;
 NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 volatile bool switch_state = LOW;
@@ -36,6 +40,7 @@ int loop_count = 0;
 unsigned long long starting_epoch_time;
 int trip_id;
 unsigned long lastDebounceTime = 0;
+double latitude, longitude;
 
 void setup() {
   // put your setup code here, to run once:
@@ -47,6 +52,7 @@ void setup() {
   accel.initialize();
   gyro.initialize();
   timeClient.begin();
+  Serial2.begin(9600); // Second serial for GPS signal
 
   // Wait for the time to be synchronized
   while (!timeClient.update()) {
@@ -87,6 +93,15 @@ void loop() {
     gyro.getRotation(&gx, &gy, &gz);    
     String utc_time = get_utc_time(starting_epoch_time);
 
+    // Fetch data from GPS sensor
+    if (Serial2.available() > 0 && gps.encode(Serial2.read())) {
+      if (gps.location.isValid()) {
+        latitude = gps.location.lat();
+        longitude = gps.location.long();
+      }
+      // maybe need to handle an else case?
+    }
+
     // store output into an array
     vibrationData.push_back(vibration_output);
     accelerationXData.push_back(ax);
@@ -95,8 +110,8 @@ void loop() {
     gyroscopeXData.push_back(gx);
     gyroscopeYData.push_back(gy);
     gyroscopeZData.push_back(gz);
-    latitudeData.push_back(0);
-    longitudeData.push_back(0);
+    latitudeData.push_back(latitude);
+    longitudeData.push_back(longitude);
     dateTimeData.push_back(utc_time); 
 
     if (loop_count % 10 == 0) {
