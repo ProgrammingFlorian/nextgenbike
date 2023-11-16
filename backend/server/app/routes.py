@@ -161,6 +161,15 @@ def get_sensor():
     return response, 200
 
 
+@url.route('/trips', methods=['GET'])
+def get_trips():
+    data = Trip.query.all()
+
+    response = json.dumps([d.as_dict() for d in data], default=str)
+
+    return response, 200
+
+
 @url.route('/terrain', methods=['GET'])
 def get_terrain():
     schema = TripIdSchema()
