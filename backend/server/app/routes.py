@@ -169,7 +169,7 @@ def get_terrain():
     except ValidationError as err:
         return json.dumps(err.messages), 400
 
-    if 'trip_id' in request_data:
+    if 'trip_id' not in request_data:
         data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
                                             func.min(Terrain.terrain).label('terrain'))
                 .group_by(Terrain.latitude, Terrain.longitude)
