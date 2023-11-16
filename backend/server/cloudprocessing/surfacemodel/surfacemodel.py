@@ -8,9 +8,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
-import backend.cloudprocessing.dataprocessing as dp
-import backend.cloudprocessing.rnn as rnn
-import backend.cloudprocessing.util as util
+import backend.server.cloudprocessing.dataprocessing as dp
+import backend.server.cloudprocessing.rnn as rnn
+import backend.server.cloudprocessing.util as util
 import backend.config as config
 
 
@@ -186,7 +186,10 @@ def train(model, dataframe):
     print_testing_accuracy(model=model, test_loader=test_loader, criterion=criterion, classes=config.classes)
 
 
-def predict(dataframe):
+def predict_df(dataframe):
+    dataframe['time_second'] = dataframe.time.map(lambda x: pd.Timestamp(x).floor(freq='S'))
+    dataframe['time'] = dataframe.time.map(pd.Timestamp.timestamp)
+
     grouped = dataframe.groupby([dataframe.trip_id, dataframe.time_second])  # grouped.get_group(1)
     x = []
 
@@ -216,7 +219,9 @@ def predict(dataframe):
     model = rnn.RNN(config.n_training_cols, config.n_hidden_layers, len(config.classes))
     model.load_state_dict(torch.load(config.surfacemodel_path))
 
-    return util.predict_dataset(model=model, x=x)
+    y = util.predict_dataset(model=model, x=x)
+
+    # TODO !!!
 
 
 def initiate(dataframe):
