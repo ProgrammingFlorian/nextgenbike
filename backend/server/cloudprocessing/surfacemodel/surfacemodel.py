@@ -8,10 +8,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
+import backend.config as config
 import backend.server.cloudprocessing.dataprocessing as dp
 import backend.server.cloudprocessing.rnn as rnn
 import backend.server.cloudprocessing.util as util
-import backend.config as config
 
 
 def data_preparation(df):
@@ -190,12 +190,16 @@ def predict_df(dataframe):
     dataframe['time_second'] = dataframe.time.map(lambda x: pd.Timestamp(x).floor(freq='S'))
     dataframe['time'] = dataframe.time.map(pd.Timestamp.timestamp)
 
-    grouped = dataframe.groupby([dataframe.trip_id, dataframe.time_second])  # grouped.get_group(1)
+    grouped = dataframe.groupby([dataframe.trip_id, dataframe.time_second])
+
     x = []
+    id_list, time_list, lat_list, lon_list = [], [], [], []
 
     for i, (trip_seconds, table) in enumerate(grouped):
-        if (i + 1) % 100 == 0:
-            print("# trip seconds: " + str(i + 1))
+        id_list.append(trip_seconds[0])
+        time_list.append(trip_seconds[1])
+        lat_list.append(table['latitude'].mean())
+        lon_list.append(table['longitude'].mean())
 
         train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
         if len(train_input.columns) != config.n_training_cols:
@@ -221,7 +225,7 @@ def predict_df(dataframe):
 
     y = util.predict_dataset(model=model, x=x)
 
-    # TODO !!!
+    return [id_list, time_list, lat_list, lon_list, y]
 
 
 def initiate(dataframe):
