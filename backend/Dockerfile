@@ -3,7 +3,7 @@ COPY requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip install -r requirements.txt
 
-COPY ./cloudprocessing/*.py cloudprocessing/
+COPY server/cloudprocessing/*.py cloudprocessing/
 
 COPY ./server/app/ server/app/
 COPY ./server/migrations/ server/migrations/
