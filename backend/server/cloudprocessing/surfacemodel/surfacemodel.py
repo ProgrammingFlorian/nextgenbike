@@ -8,69 +8,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
-import config as config
+from cloudprocessing.surfacemodel import config as config
 import cloudprocessing.dataprocessing as dp
 import cloudprocessing.rnn as rnn
 import cloudprocessing.util as util
-
-
-def data_preparation(df):
-    df.dropna(subset=['terrain'], inplace=True)
-
-    df['time_second'] = df.time.map(lambda x: pd.Timestamp(x).floor(freq='S'))
-    df['time'] = df.time.map(pd.Timestamp.timestamp)
-
-    grouped = df.groupby([df.trip_id, df.time_second])  # grouped.get_group(1)
-    x = []
-    y = []
-
-    # data verification
-    data_errors = ['GOOD', 'LONG', 'SHORT']
-    data_checking = [0, 0, 0]
-    total_samples = 0
-    total_length = 0
-
-    for i, (trip_seconds, table) in enumerate(grouped):
-        if (i + 1) % 100 == 0:
-            print("# trip seconds: " + str(i + 1))
-
-        train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
-        n_cols = len(train_input.columns)
-
-        train_input = train_input.to_numpy()
-
-        input_length = len(train_input)
-        total_length += input_length
-        if input_length == config.batch_size:
-            data_checking[0] += 1
-        elif input_length > config.batch_size:
-            data_checking[1] += 1
-            train_input = train_input[:config.batch_size]
-        else:
-            data_checking[2] += 1
-            n_missing_rows = config.batch_size - len(train_input)
-            for _ in range(n_missing_rows):
-                fake_array = [1] * n_cols
-                train_input = np.append(train_input, fake_array)
-
-        train_target = table.terrain.min()
-
-        x.append(train_input)
-        y.append(train_target)
-        total_samples += 1
-
-    print('Printing Data Accuracy to ', config.batch_size, ' Hz frequency ...')
-    for i in range(len(data_checking)):
-        if total_samples > 0:
-            print('%5s: %2d%% (%2d/%2d)' % (
-                data_errors[i], 100.0 * data_checking[i] / total_samples,
-                np.sum(data_checking[i]), total_samples))
-        else:
-            raise Exception("No Data Samples found, please check db connection")
-
-    print('Mean Batch Length: %2.2f per Tripsecond ' % (total_length / total_samples))
-
-    return np.array(x), np.array(y)
 
 
 def gen_dataloader(x, y, test_size=0.2, random_state=0):
@@ -179,7 +120,7 @@ def print_testing_accuracy(model, test_loader, classes, criterion):
 
 def train(model, dataframe):
     dataframe = dp.pre_processing(dataframe)
-    x, y = data_preparation(dataframe)
+    x, y = dp.data_preparation(dataframe)
     train_loader, test_loader = gen_dataloader(x, y)
     model, criterion = train_model(model=model, train_loader=train_loader)
     print_training_accuracy(model=model, train_loader=train_loader, criterion=criterion, classes=config.classes)

@@ -68,7 +68,6 @@ void put_request(String jsonData) {
   } else {
     Serial.println("WiFi disconnected");
   }
-  delay(5000);  //Five second delay
 }
 
 int post_request(String endpoint, String jsonData) {

@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 import cloudprocessing.surfacemodel.surfacemodel as sf
-import config as config
+from cloudprocessing.surfacemodel import config as config
 
 
 def initiate_ml(dataframe):
