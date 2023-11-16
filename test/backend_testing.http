@@ -72,9 +72,8 @@ Content-Type: application/json
 }
 
 ### Get terrain
-GET http://104.248.148.208/terrain
+POST http://localhost:5000/terrain
 Content-Type: application/json
 
 {
-"trip_id": 1
 }

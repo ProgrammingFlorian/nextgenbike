@@ -191,7 +191,10 @@ def get_terrain():
                 .filter_by(trip_id=request_data['trip_id'])
                 .order_by(Terrain.time.asc())).all()
 
-    response = json.dumps([d.as_dict() for d in data], default=str)
+    print(data)
+    response = []
+    for d in data:
+        response.append({"latitude": d[0], "longitude": d[1], "terrain": d[2]})
 
     return response, 200
 
