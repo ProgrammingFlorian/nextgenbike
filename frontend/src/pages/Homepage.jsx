@@ -12,25 +12,25 @@ export default function Homepage() {
       {/* Activities Section */}
       <div className="mt-6">
         <h2 className="text-lg font-semibold">Your Activities</h2>
-        <div className="p-3 border border-gray rounded-xl mt-4">
+        <div className="p-3 border border-gray border-opacity-50 rounded-xl mt-4">
           <div className="grid grid-cols-6 items-center p-2">
             <Home fill="green" />
             <span className="col-span-2 font-bold text-lg my-auto">76km</span>
             <span className="col-span-3 my-auto">Cycled this week</span>
           </div>
-          <div className="p-3 border border-gray rounded-md mt-2 border-opacity-80 flex flex-col gap-1.5">
+          <div className="p-3 border border-gray border-opacity-50 rounded-md mt-2 flex flex-col gap-1.5">
             <div className="grid grid-cols-6 items-center p-1">
               <Home fill="green" />
               <span className="col-span-2 font-bold text-lg my-auto">76km</span>
               <span className="col-span-3 my-auto">Cycled this week</span>
             </div>
-            <hr className="text-gray opacity-80" />
+            <hr className="text-gray opacity-50" />
             <div className="grid grid-cols-6 items-center p-1">
               <Home fill="green" />
               <span className="col-span-2 font-bold text-lg my-auto">76km</span>
               <span className="col-span-3 my-auto">Cycled this week</span>
             </div>
-            <hr className="text-gray opacity-80" />
+            <hr className="text-gray opacity-50" />
             <div className="grid grid-cols-6 items-center p-1">
               <Home fill="green" />
               <span className="col-span-2 font-bold text-lg my-auto">76km</span>

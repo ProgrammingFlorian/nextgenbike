@@ -5,10 +5,32 @@ export default function TripDetail() {
   const { id } = useParams();
   const defaultProps = {
     center: {
-      lat: 59.95,
-      lng: 30.33,
+      lat: 40.7128,
+      lng: -74.006,
     },
     zoom: 11,
+  };
+  const apiIsLoaded = (map, maps) => {
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(map);
+    const origin = { lat: 1.298432, lng: 103.7756263 };
+    const destination = { lat: 1.297204, lng: 103.778772 };
+
+    directionsService.route(
+      {
+        origin: origin,
+        destination: destination,
+        travelMode: google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          directionsRenderer.setDirections(result);
+        } else {
+          console.error(`error fetching directions ${result}`);
+        }
+      }
+    );
   };
   return (
     <div className="">
@@ -28,6 +50,8 @@ export default function TripDetail() {
           bootstrapURLKeys={{ key: import.meta.env.VITE_MAPS_API_KEY }}
           defaultCenter={defaultProps.center}
           defaultZoom={defaultProps.zoom}
+          yesIWantToUseGoogleMapApiInternals
+          onGoogleApiLoaded={({ map, maps }) => apiIsLoaded(map, maps)}
         ></GoogleMapReact>
       </div>
     </div>
