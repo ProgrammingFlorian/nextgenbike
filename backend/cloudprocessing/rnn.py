@@ -8,9 +8,10 @@ class RNN(nn.Module):
 
         self.hidden_size = hidden_size
 
-        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
-        self.h2o = nn.Linear(hidden_size, output_size)
+        self.i2h = nn.Linear(in_features=input_size + hidden_size, out_features=hidden_size)
+        self.h2o = nn.Linear(in_features=hidden_size, out_features=output_size)
         self.softmax = nn.LogSoftmax(dim=1)
+        # self.dropout = nn.Dropout(0.1)
 
     def forward(self, input, hidden):
         combined = torch.cat((input, hidden), 1)
