@@ -1,8 +1,9 @@
 import pandas as pd
 import requests
+import numpy as np
 from requests.exceptions import ChunkedEncodingError
 
-import config as config
+from cloudprocessing.surfacemodel import config as config
 
 
 def get_data_db():
@@ -64,7 +65,8 @@ def pre_processing(dataframe):
         if pavement_start <= row.time <= pavement_end or pavement_start_2 <= row.time <= pavement_end_2:
             dataframe.at[i, 'terrain'] = config.map_to_int('pavement')
             pavement_count += 1
-        elif asphalt_start_1 <= row.time <= asphalt_end_1 or asphalt_start_2 <= row.time <= asphalt_end_2 or asphalt_start_3 <= row.time <= asphalt_end_3 or asphalt_start_4 <= row.time <= asphalt_end_4:
+        elif (asphalt_start_1 <= row.time <= asphalt_end_1 or asphalt_start_2 <= row.time <= asphalt_end_2 or
+              asphalt_start_3 <= row.time <= asphalt_end_3 or asphalt_start_4 <= row.time <= asphalt_end_4):
             dataframe.at[i, 'terrain'] = config.map_to_int('asphalt')
             asphalt_count += 1
         elif gravel_start <= row.time <= gravel_end:
@@ -85,8 +87,50 @@ def pre_processing(dataframe):
     print("Gravel Data points: ", gravel_count)
     print("Grass Data points: ", grass_count)
 
-    print("")
-
     print("Crash Data points: ", crash_count)
 
     return dataframe
+
+
+def data_preparation(df):
+    df.dropna(subset=['terrain'], inplace=True)
+
+    df['time_second'] = df['time'].map(lambda x: pd.Timestamp(x).floor(freq='S'))
+    df['time'] = df['time'].map(pd.Timestamp.timestamp)
+
+    grouped = df.groupby([df.trip_id, df.time_second])  # grouped.get_group(1)
+    x, y = [], []
+
+    # data verification
+    data_errors = ['GOOD', 'LONG', 'SHORT']
+    data_checking = [0, 0, 0]
+    total_samples, total_length = 0, 0
+
+    for i, (trip_seconds, table) in enumerate(grouped):
+        if (i + 1) % 100 == 0:
+            print("# trip seconds: " + str(i + 1))
+
+        train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
+
+        train_input = train_input.to_numpy()
+
+        input_length = len(train_input)
+        total_length += input_length
+        if input_length == config.batch_size:
+            data_checking[0] += 1
+        elif input_length > config.batch_size:
+            data_checking[1] += 1
+            train_input = train_input[:config.batch_size]
+        else:
+            data_checking[2] += 1
+            n_missing_rows = config.batch_size - len(train_input)
+            for _ in range(n_missing_rows):
+                fake_array = [1] * config.n_training_cols
+                train_input = np.append(train_input, fake_array)
+
+        train_target = table.terrain.min()
+
+        x.append(train_input)
+        y.append(train_target)
+
+    return np.array(x), np.array(y)

@@ -1,6 +1,6 @@
 import torch
 
-import config as config
+from cloudprocessing.surfacemodel import config as config
 
 
 def predict(model, pred_input):
@@ -49,10 +49,7 @@ def predict_dataset(model, x):
 def compute_accuracy_confusion_matrix(model, loader, criterion):
     loss = 0.0
 
-    tp = 0
-    fp = 0
-    fn = 0
-    tn = 0
+    tp, fp, fn, tn, total = 0, 0, 0, 0, 0
 
     model.eval()
     for pred_input, target in loader:
@@ -62,6 +59,7 @@ def compute_accuracy_confusion_matrix(model, loader, criterion):
         _, pred = torch.max(output, 1)  # convert output probabilities to predicted class
         _, y = torch.max(target, 1)
 
+        total += 1
         if pred == y == 1:
             tp += 1
         elif pred == 1 and y == 0:
@@ -71,4 +69,4 @@ def compute_accuracy_confusion_matrix(model, loader, criterion):
         elif pred == y == 0:
             tn += 1
 
-    return loss, tp, fp, fn, tn
+    return loss, tp, fp, fn, tn, total
