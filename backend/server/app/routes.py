@@ -160,7 +160,7 @@ def get_sensor():
 def get_roughness():
     data = (Roughness.query.with_entities(Roughness.latitude, Roughness.longitude,
                                           func.avg(Roughness.roughness).label('roughness'))
-            .group_by([Roughness.latitude, Roughness.longitude]).all())
+            .group_by(Roughness.latitude, Roughness.longitude).all())
 
     response = json.dumps([d.as_dict() for d in data], default=str)
 
