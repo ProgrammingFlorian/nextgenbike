@@ -22,8 +22,8 @@ class TripStartSchema(Schema):
     user_id = fields.Integer(required=True)
 
 
-class TripEndSchema(Schema):
-    trip_id = fields.Integer(required=True)
+class TripIdSchema(Schema):
+    trip_id = fields.Integer(required=False)
 
 
 class SensorSchema(Schema):
@@ -91,7 +91,7 @@ def trip_start():
 
 @url.route('/trip/end', methods=['POST'])
 def trip_end():
-    schema = TripEndSchema()
+    schema = TripIdSchema()
     try:
         data = schema.load(request.json)
     except ValidationError as err:
@@ -163,9 +163,24 @@ def get_sensor():
 
 @url.route('/terrain', methods=['GET'])
 def get_terrain():
-    data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
-                                        func.avg(Terrain.terrain).label('terrain'))
-            .group_by(Terrain.latitude, Terrain.longitude).all())
+    schema = TripIdSchema()
+    try:
+        request_data = schema.load(request.json)
+    except ValidationError as err:
+        return json.dumps(err.messages), 400
+
+    if request_data['trip_id']:
+        data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
+                                            func.min(Terrain.terrain).label('terrain'))
+                .group_by(Terrain.latitude, Terrain.longitude)
+                .all().sort(Terrain.time.asc()))
+
+    else:
+        data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
+                                            func.min(Terrain.terrain).label('terrain'))
+                .group_by(Terrain.latitude, Terrain.longitude)
+                .filter_by(trip_id=request_data['trip_id'])
+                .all().sort(Terrain.time.asc()))
 
     response = json.dumps([d.as_dict() for d in data], default=str)
 
