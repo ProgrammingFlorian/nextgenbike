@@ -1,6 +1,6 @@
 import torch
 
-import backend.config as config
+import config as config
 
 
 def predict(model, pred_input):
