@@ -5,7 +5,7 @@ from multiprocessing import Process
 
 from sqlalchemy import func, and_
 from app.extensions import db
-from app.models import User, Trip, Sensors, Roughness
+from app.models import User, Trip, Sensors, Terrain
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
 import machinelearning as ml
@@ -22,8 +22,8 @@ class TripStartSchema(Schema):
     user_id = fields.Integer(required=True)
 
 
-class TripEndSchema(Schema):
-    trip_id = fields.Integer(required=True)
+class TripIdSchema(Schema):
+    trip_id = fields.Integer(required=False)
 
 
 class SensorSchema(Schema):
@@ -91,7 +91,7 @@ def trip_start():
 
 @url.route('/trip/end', methods=['POST'])
 def trip_end():
-    schema = TripEndSchema()
+    schema = TripIdSchema()
     try:
         data = schema.load(request.json)
     except ValidationError as err:
@@ -99,7 +99,7 @@ def trip_end():
     print(f"Received request with payload {data}")
 
     trip = db.session.execute(db.select(Trip).filter_by(id=data['trip_id'])).scalar_one()
-    trip.end = datetime.utcnow()
+    trip.end = datetime.datetime.utcnow()
 
     db.session.commit()
 
@@ -127,7 +127,7 @@ def sensor():
 
     db.session.commit()
 
-    pred_process = Process(target=pred, daemon=True)
+    pred_process = Process(target=lambda: pred(db.session), daemon=True)
     pred_process.start()
 
     return 'Submitted sensor data', 200
@@ -136,7 +136,7 @@ def sensor():
 last_time_pred = datetime.datetime.now().replace(microsecond=0)
 
 
-def pred():
+def pred(session):
     global last_time_pred
     current_time = datetime.datetime.now().replace(microsecond=0)
     relevant_time_ago = current_time - datetime.timedelta(seconds=5)
@@ -144,7 +144,12 @@ def pred():
         last_time_pred = datetime.datetime.now()
         data = Sensors.query.filter(and_(Sensors.time > relevant_time_ago, Sensors.time < current_time))
         data_json = json.dumps([d.as_dict() for d in data], default=str)
-        ml.predict_on_data(data_json)
+        results = ml.predict_on_data(data_json)
+        for result in results:
+            r = Terrain(result['time'], result['trip_id'], result['latitude'], result['longitude'],
+                        result['terrain'])
+            session.add(r)
+        session.commit()
 
 
 @url.route('/sensor', methods=['GET'])
@@ -156,11 +161,35 @@ def get_sensor():
     return response, 200
 
 
-@url.route('/roughness', methods=['GET'])
-def get_roughness():
-    data = (Roughness.query.with_entities(Roughness.latitude, Roughness.longitude,
-                                          func.avg(Roughness.roughness).label('roughness'))
-            .group_by(Roughness.latitude, Roughness.longitude).all())
+@url.route('/trips', methods=['GET'])
+def get_trips():
+    data = Trip.query.all()
+
+    response = json.dumps([d.as_dict() for d in data], default=str)
+
+    return response, 200
+
+
+@url.route('/terrain', methods=['GET'])
+def get_terrain():
+    schema = TripIdSchema()
+    try:
+        request_data = schema.load(request.json)
+    except ValidationError as err:
+        return json.dumps(err.messages), 400
+
+    if 'trip_id' not in request_data:
+        data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
+                                            func.min(Terrain.terrain).label('terrain'))
+                .group_by(Terrain.latitude, Terrain.longitude)
+                .order_by(Terrain.time.asc())).all()
+
+    else:
+        data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
+                                            func.min(Terrain.terrain).label('terrain'))
+                .group_by(Terrain.latitude, Terrain.longitude)
+                .filter_by(trip_id=request_data['trip_id'])
+                .all().sort(Terrain.time.asc()))
 
     response = json.dumps([d.as_dict() for d in data], default=str)
 
@@ -168,7 +197,7 @@ def get_roughness():
 
 
 @url.route('/retrain', methods=['POST'])
-def get_roughness():
+def retrain():
     data = Sensors.query.all()
     data_json = json.dumps([d.as_dict() for d in data], default=str)
     ml.start_ml(data_json)
