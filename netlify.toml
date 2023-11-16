@@ -1,0 +1,3 @@
+[build]
+  base = "frontend"
+  command = "npm run build"  # Adjust this according to your build script
