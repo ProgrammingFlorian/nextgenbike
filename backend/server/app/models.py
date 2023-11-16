@@ -52,17 +52,17 @@ class Sensors(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class Roughness(db.Model):
+class Terrain(db.Model):
     time = db.Column(db.DateTime, primary_key=True)
     trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'), primary_key=True)
 
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
 
-    roughness = db.Column(db.Integer)
+    terrain = db.Column(db.Integer)
 
     def __repr__(self):
-        return f"Roughness from {self.time} on trip {self.trip_id}"
+        return f"Terrain from {self.time} on trip {self.trip_id}"
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
