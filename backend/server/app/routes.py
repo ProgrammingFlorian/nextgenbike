@@ -173,7 +173,7 @@ def get_terrain():
         data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
                                             func.min(Terrain.terrain).label('terrain'))
                 .group_by(Terrain.latitude, Terrain.longitude)
-                .all().sort(Terrain.time.asc()))
+                .all().order_by(Terrain.time.asc()))
 
     else:
         data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
