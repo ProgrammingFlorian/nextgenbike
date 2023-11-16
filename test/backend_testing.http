@@ -1,9 +1,9 @@
 ### Create /user
-POST http://localhost:5000/users
+POST http://104.248.148.208/users
 Content-Type: application/json
 
 {
-  "username": "Peter"
+  "username": "Jason"
 }
 
 
@@ -69,4 +69,12 @@ Content-Type: application/json
   "gyroscope_z": [9, 1, 0, 8],
   "crash": 0,
   "terrain": 2
+}
+
+### Get terrain
+GET http://104.248.148.208/terrain
+Content-Type: application/json
+
+{
+"trip_id": 1
 }

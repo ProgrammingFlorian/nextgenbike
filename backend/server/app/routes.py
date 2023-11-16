@@ -170,7 +170,7 @@ def get_trips():
     return response, 200
 
 
-@url.route('/terrain', methods=['GET'])
+@url.route('/terrain', methods=['POST'])
 def get_terrain():
     schema = TripIdSchema()
     try:
@@ -189,7 +189,7 @@ def get_terrain():
                                             func.min(Terrain.terrain).label('terrain'))
                 .group_by(Terrain.latitude, Terrain.longitude)
                 .filter_by(trip_id=request_data['trip_id'])
-                .all().sort(Terrain.time.asc()))
+                .order_by(Terrain.time.asc())).all()
 
     response = json.dumps([d.as_dict() for d in data], default=str)
 
