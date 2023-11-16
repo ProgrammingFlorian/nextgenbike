@@ -8,7 +8,7 @@ from app.extensions import db
 from app.models import User, Trip, Sensors, Terrain
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
-from cloudporcessing import machinelearning as ml
+from cloudprocessing import machinelearning as ml
 
 url = Blueprint('urls', __name__)
 
