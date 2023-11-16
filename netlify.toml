@@ -2,3 +2,8 @@
   base = "frontend"
   publish = "dist"
   command = "npm run build"  # Adjust this according to your build script
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
