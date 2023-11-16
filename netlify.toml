@@ -1,4 +1,4 @@
 [build]
   base = "frontend"
-  publish = "frontend/dist"
+  publish = "dist"
   command = "npm run build"  # Adjust this according to your build script
