@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 from requests.exceptions import ChunkedEncodingError
 
-import backend.config as config
+import config as config
 
 
 def get_data_db():
