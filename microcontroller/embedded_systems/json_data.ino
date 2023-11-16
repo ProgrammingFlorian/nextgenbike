@@ -3,7 +3,7 @@
 String create_sensor_JSON_data(int tripId, std::vector<float> latitude, std::vector<float> longitude, std::vector<float> vibration,
                           std::vector<float> accelerationX, std::vector<float> accelerationY, std::vector<float> accelerationZ,
                           std::vector<float> gyroscopeX, std::vector<float> gyroscopeY, std::vector<float> gyroscopeZ, std::vector<String> dateTimeData) {
-  DynamicJsonDocument jsonDoc(1024);
+  DynamicJsonDocument jsonDoc(8192);
   jsonDoc["trip_id"] = tripId;
 
   JsonArray latitudejsonArray = jsonDoc.createNestedArray("latitude");
@@ -30,7 +30,6 @@ String create_sensor_JSON_data(int tripId, std::vector<float> latitude, std::vec
     gyroscopeZjsonArray.add(gyroscopeZ[i]);
     dateTimejsonArray.add(dateTimeData[i]);  
   }
-
 
   String jsonString;
   serializeJson(jsonDoc, jsonString);

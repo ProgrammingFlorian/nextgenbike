@@ -116,7 +116,7 @@ void loop() {
     longitudeData.push_back(longitude);
     dateTimeData.push_back(utc_time); 
 
-    if (loop_count % 4 == 0) {
+    if (loop_count % 20 == 0) {
       Serial.println(vibrationData.size());
       String datajsonFile = create_sensor_JSON_data(trip_id, latitudeData, longitudeData, vibrationData,
                                               accelerationXData, accelerationYData, accelerationZData,
