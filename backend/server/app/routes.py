@@ -1,10 +1,12 @@
 import json
-from datetime import datetime
+import datetime
 
+from sqlalchemy import func, and_
 from app.extensions import db
-from app.models import User, Trip, Sensors
+from app.models import User, Trip, Sensors, Roughness
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
+
 
 url = Blueprint('urls', __name__)
 
@@ -126,10 +128,34 @@ def sensor():
     return 'Submitted sensor data', 200
 
 
+last_time_pred = datetime.datetime.now().replace(microsecond=0)
+
+
+def pred():
+    global last_time_pred
+    current_time = datetime.datetime.now().replace(microsecond=0)
+    relevant_time_ago = current_time - datetime.timedelta(seconds=5)
+    if last_time_pred < relevant_time_ago:
+        last_time_pred = datetime.datetime.now()
+        data = Sensors.query.filter(and_(Sensors.time > relevant_time_ago, Sensors.time < current_time))
+
+
+
 @url.route('/sensor', methods=['GET'])
 def get_sensor():
     sensors = Sensors.query.all()
 
     response = json.dumps([sens.as_dict() for sens in sensors], default=str)
+
+    return response, 200
+
+
+@url.route('/roughness', methods=['GET'])
+def get_roughness():
+    data = (Roughness.query.with_entities(Roughness.latitude, Roughness.longitude,
+                                          func.avg(Roughness.roughness).label('roughness'))
+            .group_by([Roughness.latitude, Roughness.longitude]).all())
+
+    response = json.dumps([d.as_dict() for d in data], default=str)
 
     return response, 200
