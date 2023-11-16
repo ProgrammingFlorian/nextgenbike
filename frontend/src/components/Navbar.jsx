@@ -6,7 +6,7 @@ import { NavLink } from "react-router-dom";
 
 export default function Navbar() {
   return (
-    <nav className="fixed w-full bottom-0 z-50">
+    <nav className="fixed w-full bottom-0 z-50 bg-white">
       <div className="grid grid-cols-3 px-4">
         <NavLink
           to="/"

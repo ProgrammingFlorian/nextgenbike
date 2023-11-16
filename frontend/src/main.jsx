@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import Homepage from './pages/Homepage.jsx'
 import Trips from "./pages/Trips.jsx"
+import TripDetail from './pages/TripDetail.jsx'
 import './index.css'
 
 import {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
       {
         path: "/trips",
         element: <Trips />,
+      },
+      {
+        path: "/trips/:id",
+        element: <TripDetail />,
       }
     ]
   },
