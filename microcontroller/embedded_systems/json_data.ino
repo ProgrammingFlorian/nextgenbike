@@ -28,7 +28,9 @@ String create_sensor_JSON_data(int tripId, std::vector<float> latitude, std::vec
     gyroscopeXjsonArray.add(gyroscopeX[i]);
     gyroscopeYjsonArray.add(gyroscopeY[i]);
     gyroscopeZjsonArray.add(gyroscopeZ[i]);
-    dateTimejsonArray.add(dateTimeData[i]);  }
+    dateTimejsonArray.add(dateTimeData[i]);  
+  }
+
 
   String jsonString;
   serializeJson(jsonDoc, jsonString);
