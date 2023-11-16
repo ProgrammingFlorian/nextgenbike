@@ -1,12 +1,14 @@
 import json
 import datetime
 
+from multiprocessing import Process
+
 from sqlalchemy import func, and_
 from app.extensions import db
 from app.models import User, Trip, Sensors, Roughness
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
-
+from cloudporcessing import machinelearning as ml
 
 url = Blueprint('urls', __name__)
 
@@ -125,6 +127,9 @@ def sensor():
 
     db.session.commit()
 
+    pred_process = Process(target=pred, daemon=True)
+    pred_process.start()
+
     return 'Submitted sensor data', 200
 
 
@@ -138,7 +143,8 @@ def pred():
     if last_time_pred < relevant_time_ago:
         last_time_pred = datetime.datetime.now()
         data = Sensors.query.filter(and_(Sensors.time > relevant_time_ago, Sensors.time < current_time))
-
+        data_json = json.dumps([d.as_dict() for d in data], default=str)
+        ml.predict_on_data(data_json)
 
 
 @url.route('/sensor', methods=['GET'])
@@ -159,3 +165,12 @@ def get_roughness():
     response = json.dumps([d.as_dict() for d in data], default=str)
 
     return response, 200
+
+
+@url.route('/retrain', methods=['POST'])
+def get_roughness():
+    data = Sensors.query.all()
+    data_json = json.dumps([d.as_dict() for d in data], default=str)
+    ml.start_ml(data_json)
+
+    return "Started retraining model", 200
