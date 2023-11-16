@@ -1,5 +1,7 @@
 #define SWITCH 4
-#define vibrationPin 16 
+#define vibrationPin 15 
+#define RXD1 16 // Connect NEO-M8 TX to ESP32's RX PIN (16)
+#define TXD1 17 // Connect NEO-M8 RX to ESP32'S TX PIN (17)
 
 #include <vector>
 #include "Wire.h"
@@ -10,6 +12,9 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <TimeLib.h>
+#include <TinyGPSPlus.h>
+#include <SoftwareSerial.h>
+
 
 std::vector<float> latitudeData;
 std::vector<float> longitudeData;
@@ -24,14 +29,17 @@ std::vector<String> dateTimeData;
 
 ADXL345 accel;
 ITG3200 gyro;
+TinyGPSPlus gps;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org");
+SoftwareSerial ss(RXD1, TXD1);
 
 volatile bool switch_state = LOW;
 bool is_data_generated = false;
 int trip_count = 0;
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
+double latitude, longitude;
 int loop_count = 0;
 unsigned long long starting_epoch_time;
 int trip_id;
@@ -39,7 +47,8 @@ unsigned long lastDebounceTime = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(9600);
+  ss.begin(9600);
   pinMode(SWITCH, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(SWITCH), switchInterrupt, CHANGE);
   set_up_server_connection();
@@ -61,17 +70,25 @@ void setup() {
   Serial.println("Testing device connections...");
   Serial.println(accel.testConnection() ? "ADXL345 connection successful" : "ADXL345 connection failed");
   Serial.println(gyro.testConnection() ? "ITG3200 connection successful" : "ITG3200 connection failed");
+
+
 }
 
 void loop() {
-  // handle switch
-  // if (digitalRead(SWITCH) == LOW) {
-  //   delay(200);
-  //   switch_state = !switch_state;
-  //   Serial.println(switch_state);
-  // }
+    // Fetch data from GPS sensor
+  while (ss.available() > 0) {
+    if (gps.encode(ss.read())) {
+      if (gps.location.isValid()) {
+        latitude = gps.location.lat();
+        longitude = gps.location.lng();
+        Serial.println("Latitude");
+        Serial.println(latitude, 10);
+      }
+    }
+  }
 
-  // record data when switch is on
+
+  // // // record data when switch is on
   if (switch_state) {
     // wakeup
 
@@ -95,12 +112,12 @@ void loop() {
     gyroscopeXData.push_back(gx);
     gyroscopeYData.push_back(gy);
     gyroscopeZData.push_back(gz);
-    latitudeData.push_back(0);
-    longitudeData.push_back(0);
+    latitudeData.push_back(latitude);
+    longitudeData.push_back(longitude);
     dateTimeData.push_back(utc_time); 
 
     if (loop_count % 10 == 0) {
-      String datajsonFile = create_sensor_JSON_data(trip_count, latitudeData, longitudeData, vibrationData,
+      String datajsonFile = create_sensor_JSON_data(trip_id, latitudeData, longitudeData, vibrationData,
                                               accelerationXData, accelerationYData, accelerationZData,
                                               gyroscopeXData, gyroscopeYData, gyroscopeZData, dateTimeData);
       put_request(datajsonFile);
@@ -115,12 +132,13 @@ void loop() {
       longitudeData.clear();
       dateTimeData.clear();
       // put to sleep
+      // Serial.println(loop_count);
     }
 
     loop_count++;
   }
 
-  // Off switch indicates end of trip and do post request to trip/end using trip_id received
+  // // Off switch indicates end of trip and do post request to trip/end using trip_id received
   if (!switch_state && is_data_generated) {
       String end_trip_json_file = create_trip_end_JSON(trip_id);
       // String end_trip_json_file = create_trip_end_JSON(trip_id);
@@ -140,8 +158,5 @@ void switchInterrupt() {
     // Update the switch state
     switch_state = !switch_state;
 
-    // Your code to handle the debounced switch state goes here
-    Serial.print("Switch state: ");
-    Serial.println(switch_state);
   }
 }
