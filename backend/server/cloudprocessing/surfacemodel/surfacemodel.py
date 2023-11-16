@@ -190,10 +190,11 @@ def predict_df(dataframe):
     dataframe['time_second'] = dataframe.time.map(lambda x: pd.Timestamp(x).floor(freq='S'))
     dataframe['time'] = dataframe.time.map(pd.Timestamp.timestamp)
 
-    grouped = dataframe.groupby([dataframe.trip_id, dataframe.time_second])
+    grouped = dataframe.groupby([dataframe['trip_id'], dataframe['time_second']])
 
     x = []
     id_list, time_list, lat_list, lon_list = [], [], [], []
+    results = []
 
     for i, (trip_seconds, table) in enumerate(grouped):
         id_list.append(trip_seconds[0])
@@ -202,6 +203,7 @@ def predict_df(dataframe):
         lon_list.append(table['longitude'].mean())
 
         train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
+
         if len(train_input.columns) != config.n_training_cols:
             raise Exception("Wrong number of input columns (should be)", config.n_training_cols,
                             ", please check data.\n"
@@ -209,12 +211,11 @@ def predict_df(dataframe):
 
         train_input = train_input.to_numpy()
 
-        input_length = len(train_input)
-        if input_length > config.batch_size:
+        if len(train_input) > config.batch_size:
             train_input = train_input[:config.batch_size]
         else:
             n_missing_rows = config.batch_size - len(train_input)
-            for _ in range(n_missing_rows):
+            for _ in range(config.batch_size - len(train_input)):
                 fake_array = [1] * config.n_training_cols
                 train_input = np.append(train_input, fake_array)
 
@@ -222,10 +223,13 @@ def predict_df(dataframe):
 
     model = rnn.RNN(config.n_training_cols, config.n_hidden_layers, len(config.classes))
     model.load_state_dict(torch.load(config.surfacemodel_path))
+    terrain_guess = util.predict_dataset(model=model, x=x)
 
-    y = util.predict_dataset(model=model, x=x)
+    for i in range(len(id_list)):
+        results.append({"trip_id": id_list[i], "time": time_list[i], "latitude": lat_list[i], "longitude": lon_list[i],
+                        "terrain": terrain_guess[i]})
 
-    return [id_list, time_list, lat_list, lon_list, y]
+    return results
 
 
 def initiate(dataframe):
