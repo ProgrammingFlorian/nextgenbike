@@ -16,16 +16,14 @@ def predict(model, pred_input):
 
 def compute_accuracy_rnn(model, loader, criterion):
     loss = 0.0
-    class_c = list(0. for _ in range(len(config.classes)))
-    class_t = list(0. for _ in range(len(config.classes)))
+    class_c, class_t = list(0. for _ in range(len(config.classes))), list(0. for _ in range(len(config.classes)))
 
     model.eval()
     for i, (pred_input, target) in enumerate(loader):
         output = predict(model, pred_input)
 
         loss += criterion(output, target)  # calculate the batch loss
-        # convert output probabilities to predicted class
-        _, pred = torch.max(output, 1)
+        _, pred = torch.max(output, 1)  # convert output probabilities to predicted class
         _, y = torch.max(target, 1)
 
         if pred == y:
@@ -61,8 +59,7 @@ def compute_accuracy_confusion_matrix(model, loader, criterion):
         output = predict(model, pred_input)
 
         loss += criterion(output, target)  # calculate the batch loss
-        # convert output probabilities to predicted class
-        _, pred = torch.max(output, 1)
+        _, pred = torch.max(output, 1)  # convert output probabilities to predicted class
         _, y = torch.max(target, 1)
 
         if pred == y == 1:
