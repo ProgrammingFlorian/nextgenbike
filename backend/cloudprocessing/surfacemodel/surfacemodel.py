@@ -178,6 +178,7 @@ def print_testing_accuracy(model, test_loader, classes, criterion):
 
 
 def train(model, dataframe):
+    dataframe = dp.pre_processing(dataframe)
     x, y = data_preparation(dataframe)
     train_loader, test_loader = gen_dataloader(x, y)
     model, criterion = train_model(model=model, train_loader=train_loader)
