@@ -1,6 +1,6 @@
+import numpy as np
 import pandas as pd
 import requests
-import numpy as np
 from requests.exceptions import ChunkedEncodingError
 
 from cloudprocessing.surfacemodel import config as config
@@ -11,8 +11,8 @@ def get_data_db():
 
 
 def get_dataframe():
-    raw_data = ""
-    while raw_data == "":
+    raw_data = None
+    while raw_data is None:
         try:
             raw_data = get_data_db()
         except ChunkedEncodingError:
@@ -21,7 +21,7 @@ def get_dataframe():
     return pd.read_json(raw_data)
 
 
-def pre_processing(dataframe):
+def pre_processing_old(dataframe):
     # cycling session 06.11.2023
     pavement_start = pd.Timestamp(year=2023, month=11, day=6, hour=18, minute=33)
     pavement_end = pd.Timestamp(year=2023, month=11, day=6, hour=18, minute=55)
@@ -50,11 +50,9 @@ def pre_processing(dataframe):
     gravel_start = pd.Timestamp(year=3000, month=11, day=14, hour=12, minute=44)
     gravel_end = pd.Timestamp(year=3000, month=11, day=14, hour=12, minute=44)
 
-    asphalt_count = 0
-    pavement_count = 0
-    gravel_count = 0
-    grass_count = 0
+    asphalt_count, pavement_count, gravel_count, grass_count = 0, 0, 0, 0
 
+    # crash session 06.11.2023
     crash_start = pd.Timestamp(year=2024, month=11, day=6, hour=21, minute=5)
     crash_end = pd.Timestamp(year=2024, month=11, day=6, hour=21, minute=11)
 
@@ -92,6 +90,58 @@ def pre_processing(dataframe):
     return dataframe
 
 
+def pre_processing(dataframe):
+    asphalt_start = pd.Timestamp(year=2023, month=11, day=9, hour=20, minute=20)
+    asphalt_end = pd.Timestamp(year=2023, month=11, day=9, hour=21, minute=0)
+
+    pavement_start = pd.Timestamp(year=2023, month=11, day=6, hour=18, minute=33)
+    pavement_end = pd.Timestamp(year=2023, month=11, day=6, hour=18, minute=55)
+
+    gravel_start = pd.Timestamp(year=2023, month=11, day=13, hour=20, minute=00)
+    gravel_end = pd.Timestamp(year=2023, month=11, day=13, hour=20, minute=20)
+
+    grass_start = pd.Timestamp(year=2023, month=11, day=13, hour=20, minute=00)
+    grass_end = pd.Timestamp(year=2023, month=11, day=13, hour=20, minute=20)
+
+    asphalt_count, pavement_count, gravel_count, grass_count = 0, 0, 0, 0
+
+    # crash session 06.11.2023
+    crash_start = pd.Timestamp(year=2024, month=11, day=6, hour=21, minute=5)
+    crash_end = pd.Timestamp(year=2024, month=11, day=6, hour=21, minute=11)
+
+    crash_count = 0
+
+    dataframe['time'] = pd.to_datetime(dataframe['time'], format='mixed')
+    for i, row in dataframe.iterrows():
+        if pavement_start <= row.time <= pavement_end:
+            dataframe.at[i, 'terrain'] = config.map_to_int('pavement')
+            pavement_count += 1
+        elif asphalt_start <= row.time <= asphalt_end:
+            dataframe.at[i, 'terrain'] = config.map_to_int('asphalt')
+            asphalt_count += 1
+        elif gravel_start <= row.time <= gravel_end:
+            dataframe.at[i, 'terrain'] = config.map_to_int('gravel')
+            gravel_count += 1
+        elif grass_start <= row.time <= grass_end:
+            dataframe.at[i, 'terrain'] = config.map_to_int('grass')
+            grass_count += 1
+
+        if crash_start <= row.time <= crash_end:
+            dataframe.at[i, 'crash'] = 1
+            crash_count += 1
+        else:
+            dataframe.at[i, 'crash'] = 0
+
+    print("Asphalt Data points: ", asphalt_count)
+    print("Pavement Data points: ", pavement_count)
+    print("Gravel Data points: ", gravel_count)
+    print("Grass Data points: ", grass_count)
+
+    print("Crash Data points: ", crash_count)
+
+    return dataframe
+
+
 def data_preparation(df):
     df.dropna(subset=['terrain'], inplace=True)
 
@@ -104,7 +154,7 @@ def data_preparation(df):
     # data verification
     data_errors = ['GOOD', 'LONG', 'SHORT']
     data_checking = [0, 0, 0]
-    total_samples, total_length = 0, 0
+    total_samples, actual_length = 0, 0
 
     for i, (trip_seconds, table) in enumerate(grouped):
         if (i + 1) % 100 == 0:
@@ -114,8 +164,9 @@ def data_preparation(df):
 
         train_input = train_input.to_numpy()
 
+        total_samples += 1
         input_length = len(train_input)
-        total_length += input_length
+        actual_length += input_length
         if input_length == config.batch_size:
             data_checking[0] += 1
         elif input_length > config.batch_size:
@@ -132,5 +183,10 @@ def data_preparation(df):
 
         x.append(train_input)
         y.append(train_target)
+
+    for i in range(len(data_errors)):
+        print(data_errors[i], ": ", data_checking[i])
+
+    print('Mean Frequency is: %f Hz' % (actual_length / total_samples))
 
     return np.array(x), np.array(y)
