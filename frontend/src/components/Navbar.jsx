@@ -12,11 +12,11 @@ export default function Navbar() {
           to="/"
           className={({ isActive }) =>
             `flex flex-col items-center justify-center p-4 gap-1 ${
-              isActive ? "text-indigo-500" : "text-gray"
+              isActive ? "text-indigo-500 fill-indigo-500" : "text-gray"
             }`
           }
         >
-          <Home fill="gray" />
+          <Home />
           {/* <img src={home} alt="Home" className="w-6 h-6" /> */}
           <span className="text-xs">Home</span>
         </NavLink>
