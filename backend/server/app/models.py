@@ -12,6 +12,9 @@ class User(db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,6 +27,9 @@ class Trip(db.Model):
 
     def __repr__(self):
         return '<Trip {}>'.format(self.name)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class Sensors(db.Model):
