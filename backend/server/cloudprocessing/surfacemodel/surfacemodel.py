@@ -8,10 +8,56 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
-from cloudprocessing.surfacemodel import config as config
 import cloudprocessing.dataprocessing as dp
 import cloudprocessing.rnn as rnn
 import cloudprocessing.util as util
+from cloudprocessing.surfacemodel import config as config
+
+def data_preparation(df):
+    df.dropna(subset=['terrain'], inplace=True)
+
+    df['time_second'] = df['time'].map(lambda x: pd.Timestamp(x).floor(freq='S'))
+    df['time'] = df['time'].map(pd.Timestamp.timestamp)
+
+    grouped = df.groupby([df.trip_id, df.time_second])  # grouped.get_group(1)
+    x, y = [], []
+
+    # data verification
+    data_errors = ['GOOD', 'LONG', 'SHORT']
+    data_checking = [0, 0, 0]
+    total_samples, actual_length = 0, 0
+
+    for i, (trip_seconds, table) in enumerate(grouped):
+        train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
+
+        train_input = train_input.to_numpy()
+
+        total_samples += 1
+        input_length = len(train_input)
+        actual_length += input_length
+        if input_length == config.batch_size:
+            data_checking[0] += 1
+        elif input_length > config.batch_size:
+            data_checking[1] += 1
+            train_input = train_input[:config.batch_size]
+        else:
+            data_checking[2] += 1
+            n_missing_rows = config.batch_size - len(train_input)
+            for _ in range(n_missing_rows):
+                fake_array = [1] * config.n_training_cols
+                train_input = np.append(train_input, fake_array)
+
+        train_target = table.terrain.min()
+
+        x.append(train_input)
+        y.append(train_target)
+
+    for i in range(len(data_errors)):
+        print(data_errors[i], ": ", data_checking[i])
+
+    print('Mean Frequency is: %f Hz' % (actual_length / total_samples))
+
+    return np.array(x), np.array(y)
 
 
 def gen_dataloader(x, y, test_size=0.2, random_state=0):
