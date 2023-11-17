@@ -2,10 +2,12 @@ import app.routes as routes
 from app.config import Config
 from app.extensions import db, migrate
 from flask import Flask
+from flask_cors import CORS
 
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
     register_extensions(app)
     register_blueprints(app)
     return app
