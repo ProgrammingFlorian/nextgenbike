@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 from requests.exceptions import ChunkedEncodingError
 
-from cloudprocessing.surfacemodel import config as config
+from server.cloudprocessing.surfacemodel import config as config
 
 
 def get_data_db():

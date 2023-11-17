@@ -8,10 +8,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
-import cloudprocessing.dataprocessing as dp
-import cloudprocessing.rnn as rnn
-import cloudprocessing.util as util
-from cloudprocessing.surfacemodel import config as config
+import server.cloudprocessing.dataprocessing as dp
+import server.cloudprocessing.rnn as rnn
+import server.cloudprocessing.util as util
+from server.cloudprocessing.surfacemodel import config as config
+
 
 def data_preparation(df):
     df.dropna(subset=['terrain'], inplace=True)
