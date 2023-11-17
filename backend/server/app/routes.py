@@ -137,8 +137,8 @@ def sensor():
 
     db.session.commit()
 
-    #pred_process = Process(target=pred, daemon=True)
-    #pred_process.start()
+    # pred_process = Process(target=pred, daemon=True)
+    # pred_process.start()
     pred()
 
     return 'Submitted sensor data', 200
@@ -154,7 +154,8 @@ def pred():
     if last_time_pred < relevant_time_ago or True:
         last_time_pred = datetime.datetime.now()
 
-        data = Sensors.query.filter(and_(Sensors.time > relevant_time_ago, Sensors.time < current_time)).all()
+        # data = Sensors.query.filter(and_(Sensors.time > relevant_time_ago, Sensors.time < current_time)).all()
+        data = Sensors.query.all()
         data_json = json.dumps([d.as_dict() for d in data], default=str)
         print(data_json)
         results = ml.predict_on_data(data_json)
