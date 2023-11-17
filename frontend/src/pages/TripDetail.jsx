@@ -13,6 +13,24 @@ import axios from "axios";
 
 import { generateColor } from "../utils";
 
+const terrainLegend = [
+  {
+    terrain: 0,
+    label: "Asphalt",
+  },
+  {
+    terrain: 1,
+    label: "Pavement",
+  },
+  {
+    terrain: 2,
+    label: "Gravel",
+  },
+  {
+    terrain: 3,
+    label: "Grass",
+  },
+];
 export default function TripDetail() {
   const { id } = useParams();
 
@@ -110,7 +128,12 @@ export default function TripDetail() {
         .then((response) => {
           const markers = response.data;
           console.log(markers);
-          setMarkers(markers.map((marker) => ({ lat: marker.latitude, lng: marker.longitude })));
+          setMarkers(
+            markers.map((marker) => ({
+              lat: marker.latitude,
+              lng: marker.longitude,
+            }))
+          );
           setPaths(updatePaths(paths, markers));
           // fitBounds(map, maps);
           // afterMapLoadChanges();
@@ -136,6 +159,28 @@ export default function TripDetail() {
       <div className="p-9 mt-4">
         <div className="flex flex-col gap-0.5">
           <h1 className="text-2xl font-bold">Trip Detail</h1>
+        </div>
+      </div>
+      <div className="absolute w-full z-10 bottom-28">
+        <div className="flex justify-left ml-6">
+          <div className="bg-white p-4 w-4/5 border border-gray border-opacity-50 flex flex-col text-left rounded-lg">
+            <span className="font-bold">Legend</span>
+            <div className="grid grid-cols-2">
+              {terrainLegend.map((item, idx) => (
+                <div key={idx} className="flex flex-row gap-2">
+                  <span
+                    style={{
+                      backgroundColor: generateColor(item.terrain),
+                      padding: "4px",
+                      marginTop: "auto",
+                      marginBottom: "auto",
+                    }}
+                  />
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       {/* Render Map */}

@@ -1,5 +1,5 @@
-export const API_URL = "http://104.248.148.208";
-// export const API_URL = "http://localhost:5000";
+// export const API_URL = "http://104.248.148.208";
+export const API_URL = "http://localhost:5000";
 
 export const dummyMarkers = [
   { lat: 40.7128, lng: -74.006, terrain: "asphalt" },

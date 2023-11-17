@@ -74,7 +74,7 @@ export function generateColor(terrain) {
   console.log(terrain);
   switch (terrain) {
     case Terrain.ASPHALT:
-      return "#FBA04C";
+      return "#AEAEAE";
     case Terrain.PAVEMENT:
       return "#FBA04C";
     case Terrain.GRAVEL:
