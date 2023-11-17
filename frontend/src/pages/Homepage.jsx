@@ -1,5 +1,7 @@
 import { Home } from "../assets/svgs";
 
+import GoogleMapReact from "google-map-react";
+
 export default function Homepage() {
   return (
     <div className="p-9 mt-4">
