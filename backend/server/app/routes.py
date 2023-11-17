@@ -9,6 +9,7 @@ from app.models import User, Trip, Sensors, Terrain
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
 import machinelearning as ml
+from cloudprocessing import dataprocessing
 
 url = Blueprint('urls', __name__)
 
@@ -136,8 +137,9 @@ def sensor():
 
     db.session.commit()
 
-    pred_process = Process(target=lambda: pred(db.session), daemon=True)
-    pred_process.start()
+    #pred_process = Process(target=pred, daemon=True)
+    #pred_process.start()
+    pred()
 
     return 'Submitted sensor data', 200
 
@@ -145,20 +147,22 @@ def sensor():
 last_time_pred = datetime.datetime.now().replace(microsecond=0)
 
 
-def pred(session):
+def pred():
     global last_time_pred
     current_time = datetime.datetime.now().replace(microsecond=0)
     relevant_time_ago = current_time - datetime.timedelta(seconds=5)
-    if last_time_pred < relevant_time_ago:
+    if last_time_pred < relevant_time_ago or True:
         last_time_pred = datetime.datetime.now()
-        data = Sensors.query.filter(and_(Sensors.time > relevant_time_ago, Sensors.time < current_time))
+
+        data = Sensors.query.filter(and_(Sensors.time > relevant_time_ago, Sensors.time < current_time)).all()
         data_json = json.dumps([d.as_dict() for d in data], default=str)
+        print(data_json)
         results = ml.predict_on_data(data_json)
         for result in results:
             r = Terrain(result['time'], result['trip_id'], result['latitude'], result['longitude'],
                         result['terrain'])
-            session.add(r)
-        session.commit()
+            db.session.add(r)
+        db.session.commit()
 
 
 @url.route('/sensor', methods=['GET'])
@@ -214,3 +218,25 @@ def retrain():
     ml.start_ml(data_json)
 
     return "Started retraining model", 200
+
+
+@url.route('/sql', methods=['GET'])
+def sql():
+    dataframe = dataprocessing.pre_processing(dataprocessing.get_dataframe())
+    dataframe.dropna(subset=['terrain'], inplace=True)
+    for i, row in dataframe.iterrows():
+        _time = dataframe.loc[i, 'time']
+        _trip_id = dataframe.loc[i, 'trip_id']
+        _latitude = dataframe.loc[i, 'latitude']
+        _longitude = dataframe.loc[i, 'longitude']
+        _terrain = dataframe.loc[i, 'terrain']
+        print(_trip_id)
+        print(_latitude)
+        print(_longitude)
+        print(type(_time))
+        print(_time.to_pydatetime())
+        t = Terrain(_time.to_pydatetime(), _trip_id, _latitude, _longitude, _terrain)
+        db.session.add(t)
+    db.session.commit()
+
+    return "done", 200
