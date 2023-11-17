@@ -12,6 +12,9 @@ class User(db.Model):
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,6 +27,9 @@ class Trip(db.Model):
 
     def __repr__(self):
         return '<Trip {}>'.format(self.name)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class Sensors(db.Model):
@@ -47,6 +53,22 @@ class Sensors(db.Model):
 
     def __repr__(self):
         return f"Sensor data at {self.time} on trip {self.trip_id}"
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
+class Terrain(db.Model):
+    time = db.Column(db.DateTime, primary_key=True)
+    trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'), primary_key=True)
+
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+
+    terrain = db.Column(db.Integer)
+
+    def __repr__(self):
+        return f"Terrain from {self.time} on trip {self.trip_id}"
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
