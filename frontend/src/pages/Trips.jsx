@@ -28,12 +28,30 @@ export default function Homepage() {
         onChange={(e) => setKeyword(e.target.value)}
       />
 
-      {/* Render Small Items */}
-      {trips.map((trip, index) => (
-        <div key={index}>
-          {trip.name}
-        </div>
-      ))}
+      <div className="flex flex-col gap-2 mt-4 mb-20">
+        {/* Render Small Items */}
+        {trips.map((trip, index) => {
+          const startDate = new Date(trip.start);
+          const endDate = new Date(trip.end);
+          return (
+            <div
+              key={index}
+              className="p-3 border border-gray rounded-lg border-opacity-50"
+            >
+              <div className="grid grid-cols-12 text-center">
+                <span>📌</span>
+                <span>{trip.id}</span>
+                <span className="col-span-10 text-left ml-2">{trip.name}</span>
+                <span className="col-span-2"></span>
+                <span className="col-span-10 text-left ml-2 text-gray text-sm">
+                  {startDate.toLocaleDateString()} -{" "}
+                  {endDate.toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

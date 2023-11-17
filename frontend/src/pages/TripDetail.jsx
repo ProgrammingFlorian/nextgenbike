@@ -27,8 +27,8 @@ export default function TripDetail() {
 
   const [markers, setMarkers] = useState([
     {
-      lat: 40.7128,
-      lng: -74.006,
+      lat: 1.2944905,
+      lng: 103.7746889,
     },
   ]);
   const [paths, setPaths] = useState(defaultPath);
@@ -40,8 +40,8 @@ export default function TripDetail() {
 
   const defaultProps = {
     center: {
-      lat: 40.7128,
-      lng: -74.006,
+      lat: 1.2944905,
+      lng: 103.7746889,
     },
     zoom: 11,
   };
@@ -81,7 +81,6 @@ export default function TripDetail() {
               maps={maps}
               markers={path.markers}
               color={generateColor(path.terrain)}
-              onClick={() => {console.log("clicked")}}
             />
           );
         })}
@@ -100,7 +99,7 @@ export default function TripDetail() {
         .post(
           `${API_URL}/terrain`,
           {
-            trip_id: 1,
+            trip_id: parseInt(id),
           },
           {
             headers: {
