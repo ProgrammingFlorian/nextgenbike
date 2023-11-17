@@ -174,6 +174,7 @@ def train(model, dataframe):
 
 
 def predict_df(dataframe):
+    print(dataframe.head())
     dataframe['time'] = pd.to_datetime(dataframe['time'], format='mixed')
     dataframe['time_second'] = dataframe.time.map(lambda x: pd.Timestamp(x).floor(freq='S'))
     dataframe['time'] = dataframe.time.map(pd.Timestamp.timestamp)
