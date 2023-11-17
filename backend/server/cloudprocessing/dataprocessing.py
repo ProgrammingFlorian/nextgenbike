@@ -1,6 +1,6 @@
+import numpy as np
 import pandas as pd
 import requests
-import numpy as np
 from requests.exceptions import ChunkedEncodingError
 
 from cloudprocessing.surfacemodel import config as config
@@ -11,8 +11,8 @@ def get_data_db():
 
 
 def get_dataframe():
-    raw_data = ""
-    while raw_data == "":
+    raw_data = None
+    while raw_data is None:
         try:
             raw_data = get_data_db()
         except ChunkedEncodingError:
@@ -46,33 +46,42 @@ def pre_processing(dataframe):
     asphalt_start_4 = pd.Timestamp(year=2023, month=11, day=14, hour=12, minute=52)
     asphalt_end_4 = pd.Timestamp(year=2023, month=11, day=14, hour=13, minute=15)
 
+    # cycling session 17.11.2023
+    grass_start_3 = pd.Timestamp(year=2023, month=11, day=17, hour=6, minute=51)
+    grass_end_3 = pd.Timestamp(year=2023, month=11, day=17, hour=7, minute=13)
+    asphalt_start_5 = pd.Timestamp(year=2023, month=11, day=17, hour=7, minute=21)
+    asphalt_end_5 = pd.Timestamp(year=2023, month=11, day=17, hour=7, minute=55)
+    pavement_start_3 = pd.Timestamp(year=2023, month=11, day=17, hour=7, minute=55)
+    pavement_end_3 = pd.Timestamp(year=2023, month=11, day=17, hour=8, minute=24)
+
     # cycling session # TODO: Gravel
     gravel_start = pd.Timestamp(year=3000, month=11, day=14, hour=12, minute=44)
     gravel_end = pd.Timestamp(year=3000, month=11, day=14, hour=12, minute=44)
 
-    asphalt_count = 0
-    pavement_count = 0
-    gravel_count = 0
-    grass_count = 0
+    asphalt_count, pavement_count, gravel_count, grass_count = 0, 0, 0, 0
 
-    crash_start = pd.Timestamp(year=2024, month=11, day=6, hour=21, minute=5)
-    crash_end = pd.Timestamp(year=2024, month=11, day=6, hour=21, minute=11)
+    # crash session 06.11.2023
+    crash_start = pd.Timestamp(year=2023, month=11, day=17, hour=8, minute=37)
+    crash_end = pd.Timestamp(year=2023, month=11, day=17, hour=8, minute=44)
 
     crash_count = 0
 
     dataframe['time'] = pd.to_datetime(dataframe['time'], format='mixed')
     for i, row in dataframe.iterrows():
-        if pavement_start <= row.time <= pavement_end or pavement_start_2 <= row.time <= pavement_end_2:
+        if (pavement_start <= row.time <= pavement_end or pavement_start_2 <= row.time <= pavement_end_2 or
+                pavement_start_3 <= row.time <= pavement_end_3):
             dataframe.at[i, 'terrain'] = config.map_to_int('pavement')
             pavement_count += 1
         elif (asphalt_start_1 <= row.time <= asphalt_end_1 or asphalt_start_2 <= row.time <= asphalt_end_2 or
-              asphalt_start_3 <= row.time <= asphalt_end_3 or asphalt_start_4 <= row.time <= asphalt_end_4):
+              asphalt_start_3 <= row.time <= asphalt_end_3 or asphalt_start_4 <= row.time <= asphalt_end_4 or
+              asphalt_start_5 <= row.time <= asphalt_end_5 or crash_start <= row.time <= crash_end):
             dataframe.at[i, 'terrain'] = config.map_to_int('asphalt')
             asphalt_count += 1
         elif gravel_start <= row.time <= gravel_end:
             dataframe.at[i, 'terrain'] = config.map_to_int('gravel')
             gravel_count += 1
-        elif grass_start <= row.time <= grass_end or grass_start_2 <= row.time <= grass_end_2:
+        elif (grass_start <= row.time <= grass_end or grass_start_2 <= row.time <= grass_end_2 or
+              grass_start_3 <= row.time <= grass_end_3):
             dataframe.at[i, 'terrain'] = config.map_to_int('grass')
             grass_count += 1
 
@@ -90,47 +99,3 @@ def pre_processing(dataframe):
     print("Crash Data points: ", crash_count)
 
     return dataframe
-
-
-def data_preparation(df):
-    df.dropna(subset=['terrain'], inplace=True)
-
-    df['time_second'] = df['time'].map(lambda x: pd.Timestamp(x).floor(freq='S'))
-    df['time'] = df['time'].map(pd.Timestamp.timestamp)
-
-    grouped = df.groupby([df.trip_id, df.time_second])  # grouped.get_group(1)
-    x, y = [], []
-
-    # data verification
-    data_errors = ['GOOD', 'LONG', 'SHORT']
-    data_checking = [0, 0, 0]
-    total_samples, total_length = 0, 0
-
-    for i, (trip_seconds, table) in enumerate(grouped):
-        if (i + 1) % 100 == 0:
-            print("# trip seconds: " + str(i + 1))
-
-        train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
-
-        train_input = train_input.to_numpy()
-
-        input_length = len(train_input)
-        total_length += input_length
-        if input_length == config.batch_size:
-            data_checking[0] += 1
-        elif input_length > config.batch_size:
-            data_checking[1] += 1
-            train_input = train_input[:config.batch_size]
-        else:
-            data_checking[2] += 1
-            n_missing_rows = config.batch_size - len(train_input)
-            for _ in range(n_missing_rows):
-                fake_array = [1] * config.n_training_cols
-                train_input = np.append(train_input, fake_array)
-
-        train_target = table.terrain.min()
-
-        x.append(train_input)
-        y.append(train_target)
-
-    return np.array(x), np.array(y)
