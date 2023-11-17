@@ -38,7 +38,7 @@ Content-Type: application/json
 
 {
   "time": ["2014-12-22T03:12:58.019067+00:00", "2014-12-22T03:12:58.019057+00:00", "2014-12-22T03:12:58.019047+00:00", "2014-12-22T03:12:58.019037+00:00"],
-  "trip_id": 1,
+  "trip_id": 10,
   "vibration": [1.0, 0.5, 2.0, 5.0],
   "latitude": [-5, -4.9, -4.8, -4.7],
   "longitude": [1, 1.9, 2.8, 3.7],
@@ -56,8 +56,8 @@ PUT http://localhost:5000/sensor
 Content-Type: application/json
 
 {
-  "time": "1256953732",
-  "trip_id": 1,
+  "time": ["1256953732"],
+  "trip_id": 3,
   "vibration": [1.0, 0.5, 2.0, 5.0],
   "latitude": [-5, -4.9, -4.8, -4.7],
   "longitude": [1, 1.9, 2.8, 3.7],
@@ -83,3 +83,11 @@ GET http://localhost:5000/trips
 
 ### Get users
 GET http://localhost:5000/users
+
+### Get sql
+GET http://localhost:5000/sql
+
+### Post retrain
+POST http://104.248.148.208/retrain
+
+### Post sensor

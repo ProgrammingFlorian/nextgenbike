@@ -50,7 +50,7 @@ class SensorSchema(Schema):
 @url.route('/')
 @url.route('/index')
 def index():
-    return 'Hello, World!'
+    return 'Welcome to the Next-Gen Bike backend!'
 
 
 @url.route('/users', methods=['POST'])
@@ -73,11 +73,11 @@ def users():
 
 
 @url.route('/users', methods=['GET'])
-def get_user():
+def get_users():
     data = User.query.all()
-
+    print(data)
     response = json.dumps([d.as_dict() for d in data], default=str)
-
+    print(response)
     return response, 200
 
 
