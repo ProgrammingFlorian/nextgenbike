@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../constants";
+import { useNavigate } from "react-router-dom";
 
 export default function Homepage() {
   const [keyword, setKeyword] = useState("");
   const [trips, setTrips] = useState([]);
+  
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`${API_URL}/trips`).then((res) => {
@@ -37,6 +40,7 @@ export default function Homepage() {
             <div
               key={index}
               className="p-3 border border-gray rounded-lg border-opacity-50"
+              onClick={() => navigate(`/trips/${trip.id}`)}
             >
               <div className="grid grid-cols-12 text-center">
                 <span>📌</span>
