@@ -1,8 +1,8 @@
 import pandas as pd
 import os
 
-import cloudprocessing.surfacemodel.surfacemodel as sf
-from cloudprocessing.surfacemodel import config as config
+import server.cloudprocessing.surfacemodel.surfacemodel as sf
+from server.cloudprocessing.surfacemodel import config as config
 
 
 def initiate_ml(dataframe):
