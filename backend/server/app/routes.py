@@ -150,14 +150,13 @@ last_time_pred = datetime.datetime.now().replace(microsecond=0)
 def pred():
     global last_time_pred
     current_time = datetime.datetime.now().replace(microsecond=0)
-    relevant_time_ago = current_time - datetime.timedelta(seconds=5)
+    relevant_time_ago = current_time - datetime.timedelta(seconds=10)
     if last_time_pred < relevant_time_ago or True:
         last_time_pred = datetime.datetime.now()
 
-        # data = Sensors.query.filter(and_(Sensors.time > relevant_time_ago, Sensors.time < current_time)).all()
-        data = Sensors.query.all()
+        data = Sensors.query.filter(Sensors.time > relevant_time_ago).all()
+        # data = Sensors.query.all()
         data_json = json.dumps([d.as_dict() for d in data], default=str)
-        print(data_json)
         results = ml.predict_on_data(data_json)
         for result in results:
             r = Terrain(result['time'], result['trip_id'], result['latitude'], result['longitude'],
