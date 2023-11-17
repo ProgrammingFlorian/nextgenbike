@@ -1,7 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { API_URL } from "../constants";
 
 export default function Homepage() {
   const [keyword, setKeyword] = useState("");
+  const [trips, setTrips] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${API_URL}/trips`).then((res) => {
+      setTrips(res.data);
+    });
+  }, []);
 
   return (
     <div className="p-9 mt-4">
@@ -20,6 +29,11 @@ export default function Homepage() {
       />
 
       {/* Render Small Items */}
+      {trips.map((trip, index) => (
+        <div key={index}>
+          {trip.name}
+        </div>
+      ))}
     </div>
   );
 }
