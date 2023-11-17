@@ -11,6 +11,8 @@ import { updatePaths } from "../utils";
 
 import axios from "axios";
 
+import { generateColor } from "../utils";
+
 export default function TripDetail() {
   const { id } = useParams();
 
@@ -23,10 +25,12 @@ export default function TripDetail() {
     paths: [],
   };
 
-  const [markers, setMarkers] = useState([{
-    lat: 40.7128,
-    lng: -74.006,
-  }]);
+  const [markers, setMarkers] = useState([
+    {
+      lat: 40.7128,
+      lng: -74.006,
+    },
+  ]);
   const [paths, setPaths] = useState(defaultPath);
 
   // const markers = [
@@ -76,7 +80,8 @@ export default function TripDetail() {
               map={map}
               maps={maps}
               markers={path.markers}
-              color={path.terrain === "grass" ? "#00FF00" : "#000000"}
+              color={generateColor(path.terrain)}
+              onClick={() => {console.log("clicked")}}
             />
           );
         })}
@@ -91,21 +96,33 @@ export default function TripDetail() {
     // dummyMarkers.push(...additionalMarkers);
     const intervalId = setInterval(() => {
       // This code will be executed every second
-      axios.get(`${API_URL}/terrain`).then((response) => {
-        const markers = response.data;
-        console.log(markers);
-        setMarkers(markers);
-        setPaths(updatePaths(paths, markers));
-        // fitBounds(map, maps);
-        // afterMapLoadChanges();
-      });
+      axios
+        .post(
+          `${API_URL}/terrain`,
+          {
+            trip_id: 1,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .then((response) => {
+          const markers = response.data;
+          console.log(markers);
+          setMarkers(markers.map((marker) => ({ lat: marker.latitude, lng: marker.longitude })));
+          setPaths(updatePaths(paths, markers));
+          // fitBounds(map, maps);
+          // afterMapLoadChanges();
+        });
     }, 5000);
-      // axios.get(`${API_URL}/terrain`).then((response) => {
-      //   const markers = response.data;
-      //   console.log(markers);
-      //   setMarkers(markers);
-      //   setPaths(updatePaths(paths, markers));
-      // });
+    // axios.get(`${API_URL}/terrain`).then((response) => {
+    //   const markers = response.data;
+    //   console.log(markers);
+    //   setMarkers(markers);
+    //   setPaths(updatePaths(paths, markers));
+    // });
 
     // This function will be called when the component unmounts
     return () => {
@@ -129,14 +146,13 @@ export default function TripDetail() {
         style={{ height: "76vh", width: "100%" }}
       >
         <GoogleMapReact
-          key={markers.length}  // Add a key attribute here
+          key={markers.length}
           bootstrapURLKeys={{ key: import.meta.env.VITE_MAPS_API_KEY }}
           defaultCenter={defaultProps.center}
           defaultZoom={defaultProps.zoom}
           yesIWantToUseGoogleMapApiInternals
           onGoogleApiLoaded={({ map, maps }) => apiIsLoaded(map, maps)}
         >
-          <Marker text="A" lat={40.7128} lng={-74.006} />
           {console.log(paths)}
           {/* <Marker text={'YYZ'} lat={43.681583} lng={-79.61146} /> */}
           {mapsLoaded ? afterMapLoadChanges() : ""}

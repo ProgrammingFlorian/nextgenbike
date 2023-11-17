@@ -4,7 +4,7 @@ export default function Polyline({ color, markers, map, maps }) {
         geodesic: true,
         strokeColor: color,
         strokeOpacity: 1.0,
-        strokeWeight: 4
+        strokeWeight: 6
     })
     geodesicPolyline.setMap(map)
     return null;
