@@ -11,8 +11,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
-from server import server as dp, server as rnn, server as util
-from server.server import config as config
+import cloudprocessing.rnn as rnn
+import cloudprocessing.util as util
+import cloudprocessing.surfacemodel.config as config
+from cloudprocessing import dataprocessing as dp
 
 
 def group_trip_second(df: DataFrame):
@@ -206,8 +208,6 @@ def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
         lon_list.append(table['longitude'].mean())
 
         train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
-
-
 
         train_input = train_input.to_numpy()
 

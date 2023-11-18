@@ -3,7 +3,7 @@ import requests
 from pandas import DataFrame
 from requests.exceptions import ChunkedEncodingError
 
-from server.server import config as config
+from webapp import config
 
 
 def format_time(dataframe: DataFrame) -> DataFrame:

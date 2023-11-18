@@ -1,6 +1,6 @@
 import torch
 
-from server.server import config as config
+from webapp import config
 
 
 def predict(model, pred_input) -> torch.Tensor:

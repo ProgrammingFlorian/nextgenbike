@@ -1,6 +1,6 @@
 import pytest
-from server.server import create_app
-from server.server import db
+from webapp import create_app
+from webapp.extensions import db
 
 
 @pytest.fixture

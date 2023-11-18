@@ -1,8 +1,8 @@
 import pytest
 
-import server.cloudprocessing.surfacemodel.config as sf_config
+import cloudprocessing.surfacemodel.config as sf_config
 
-import server.cloudprocessing.surfacemodel.surfacemodel as sf
+import cloudprocessing.surfacemodel.surfacemodel as sf
 from test.unit.cloudprocessing.surfacemodel import (single_element_dataframe_no_terrain, single_element_data_asphalt,
                                                     single_element_data_long_asphalt)
 

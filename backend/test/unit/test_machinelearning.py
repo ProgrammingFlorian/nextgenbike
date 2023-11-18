@@ -1,6 +1,4 @@
-import pytest
-
-from server import machinelearning as ml
+import machinelearning as ml
 
 
 def test_predict_no_data():

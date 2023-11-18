@@ -1,8 +1,7 @@
 import pandas as pd
 import pytest
 
-from server.cloudprocessing import config
-from server.cloudprocessing.surfacemodel.config import batch_size
+from cloudprocessing.surfacemodel.config import batch_size
 
 
 @pytest.fixture

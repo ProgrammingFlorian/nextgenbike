@@ -3,8 +3,10 @@ import datetime
 import pandas as pd
 import os
 
-from server.server import config as config, server as sf
-from server import server as dbf, server as utils
+from cloudprocessing import config
+from cloudprocessing.surfacemodel import surfacemodel as sf
+import webapp.database_functions as dbf
+import webapp.utils as utils
 
 
 def initiate_ml(dataframe):

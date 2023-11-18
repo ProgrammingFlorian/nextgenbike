@@ -3,7 +3,9 @@ import json
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
 
-from server import server as dbf, server as utils, server as ml
+from webapp import database_functions as dbf
+import webapp.utils as utils
+import machinelearning as ml
 
 url = Blueprint('urls', __name__)
 

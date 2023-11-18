@@ -1,6 +1,6 @@
-import app.routes as routes
-from server.app.config import Config
-from server.app.extensions import db, migrate
+import webapp.routes as routes
+from webapp.config import Config
+from webapp.extensions import db, migrate
 from flask import Flask
 from flask_cors import CORS
 
@@ -14,7 +14,7 @@ def create_app():
 
 
 def register_extensions(app):
-    app.sf_config.from_object(Config)
+    app.config.from_object(Config)
     db.init_app(app)
     migrate.init_app(app, db)
     return None

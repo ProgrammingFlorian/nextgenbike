@@ -2,8 +2,8 @@ import datetime
 
 from sqlalchemy import and_, func
 
-from server.server import db
-from server.server import User, Trip, Sensors, Terrain
+from webapp.extensions import db
+from webapp.models import User, Trip, Sensors, Terrain
 
 
 def create_user(username) -> User:

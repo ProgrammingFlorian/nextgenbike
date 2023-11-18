@@ -2,7 +2,7 @@ import datetime
 
 from test.unit.app import client
 import unittest.mock as mock
-from server.server import User, Trip, Sensors, Terrain
+from webapp.models import User, Trip, Sensors, Terrain
 
 dbf_get_all_users = [User(id=1, username="Peter"), User(id=2, username="Wei Chang"), User(id=3, username="Florian")]
 dbf_create_user = User(id=1, username="Peter")
@@ -13,7 +13,7 @@ headers = {
 }
 
 
-@mock.patch("server.app.routes.dbf.get_all_users", return_value=dbf_get_all_users)
+@mock.patch("webapp.routes.dbf.get_all_users", return_value=dbf_get_all_users)
 def test_get_users(get_all_users, client):
     result = client.get("/users")
 
@@ -24,7 +24,7 @@ def test_get_users(get_all_users, client):
             '[{"id": 1, "username": "Peter"}, {"id": 2, "username": "Wei Chang"}, {"id": 3, "username": "Florian"}]')
 
 
-@mock.patch("server.app.routes.dbf.create_user", return_value=dbf_create_user)
+@mock.patch("webapp.routes.dbf.create_user", return_value=dbf_create_user)
 def test_create_user(create_user, client):
     result = client.post("/users", data='{"username": "Peter"}', headers=headers)
 
@@ -34,7 +34,7 @@ def test_create_user(create_user, client):
     assert json == '{"user_id": 1}'
 
 
-@mock.patch("server.app.routes.dbf.create_trip", return_value=Trip(name="test_trip", id=1))
+@mock.patch("webapp.routes.dbf.create_trip", return_value=Trip(name="test_trip", id=1))
 def test_trip_start(create_trip, client):
     result = client.post("/trip/start", data='{"name": "test_trip", "user_id": 1}', headers=headers)
 
@@ -44,7 +44,7 @@ def test_trip_start(create_trip, client):
     assert json == '{"trip_id": 1}'
 
 
-@mock.patch("server.app.routes.dbf.end_trip",
+@mock.patch("webapp.routes.dbf.end_trip",
             return_value=Trip(name="test_trip", id=1, end=datetime.datetime(2020, 10, 5, 18, 13)))
 def test_trip_end(end_trip, client):
     result = client.post("/trip/end", data='{"trip_id": 1}', headers=headers)
@@ -55,7 +55,7 @@ def test_trip_end(end_trip, client):
     assert json == '{"status": "success", "trip_id": 1, "trip_end": "2020-10-05 18:13:00"}'
 
 
-@mock.patch("server.app.routes.dbf.get_trip_data",
+@mock.patch("webapp.routes.dbf.get_trip_data",
             return_value=[
                 Trip(id=1, start=datetime.datetime(2020, 10, 5, 18, 13, 3), end=datetime.datetime(2020, 10, 6, 1),
                      name="my first trip", user_id=1)])
@@ -69,8 +69,8 @@ def test_get_trips(get_trip_data, client):
                     '"user_id": 1}]')
 
 
-@mock.patch("server.app.routes.dbf.put_sensor_data")
-@mock.patch("server.app.routes.ml.try_to_predict")
+@mock.patch("webapp.routes.dbf.put_sensor_data")
+@mock.patch("webapp.routes.ml.try_to_predict")
 def test_put_sensor_data(try_to_predict, put_sensor_data, client):
     result = client.put("/sensor",
                         data='{"time": ["2014-12-22T03:12:58.019067+00:00", "2014-12-22T03:12:58.019057+00:00", '
@@ -109,7 +109,7 @@ def test_put_sensor_data(try_to_predict, put_sensor_data, client):
     assert json == '{"status": "success"}'
 
 
-@mock.patch("server.app.routes.dbf.get_sensor_data", return_value=[
+@mock.patch("webapp.routes.dbf.get_sensor_data", return_value=[
     Sensors(time=datetime.datetime(2020, 10, 5, 18, 13, 3), trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
             acceleration_x=1.1, acceleration_y=2.2, acceleration_z=3.3, gyroscope_x=3.5, gyroscope_y=8.5,
             gyroscope_z=-134.5, crash=0, terrain=3)])
@@ -124,7 +124,7 @@ def test_get_sensor(get_sensor_data, client):
                     '"gyroscope_y": 8.5, "gyroscope_z": -134.5, "crash": 0, "terrain": 3}]')
 
 
-@mock.patch("server.app.routes.dbf.get_terrain_data", return_value=[
+@mock.patch("webapp.routes.dbf.get_terrain_data", return_value=[
     Terrain(time=datetime.datetime(2020, 10, 5, 18, 13, 3), trip_id=1, latitude=54.3, longitude=3.4, terrain=2)])
 def test_get_terrain(get_terrain_data, client):
     result = client.post("/terrain", data="{}", headers=headers)
@@ -136,7 +136,7 @@ def test_get_terrain(get_terrain_data, client):
                      '"longitude": 3.4, "terrain": 2}]'))
 
 
-@mock.patch("server.app.routes.dbf.get_terrain_data_by_trip_id", return_value=[
+@mock.patch("webapp.routes.dbf.get_terrain_data_by_trip_id", return_value=[
     Terrain(time=datetime.datetime(2020, 10, 5, 18, 13, 3), trip_id=1, latitude=54.3, longitude=3.4, terrain=2)])
 def test_get_terrain_with_trip_id(get_terrain_data_by_trip_id, client):
     result = client.post("/terrain", data='{"trip_id": 1}', headers=headers)
@@ -148,11 +148,11 @@ def test_get_terrain_with_trip_id(get_terrain_data_by_trip_id, client):
                      '"longitude": 3.4, "terrain": 2}]'))
 
 
-@mock.patch("server.app.routes.dbf.get_sensor_data", return_value=[
+@mock.patch("webapp.routes.dbf.get_sensor_data", return_value=[
     Sensors(time=datetime.datetime(2020, 10, 5, 18, 13, 3), trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
             acceleration_x=1.1, acceleration_y=2.2, acceleration_z=3.3, gyroscope_x=3.5, gyroscope_y=8.5,
             gyroscope_z=-134.5, crash=0, terrain=3)])
-@mock.patch("server.app.routes.ml.start_ml")
+@mock.patch("webapp.routes.ml.start_ml")
 def test_retrain(start_ml, get_sensor_data, client):
     result = client.post("/retrain", headers=headers)
 
