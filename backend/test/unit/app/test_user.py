@@ -3,7 +3,7 @@ import unittest.mock as mock
 from server.app.models import User
 from unittest.mock import call
 
-users_query_all = [User(1, "Peter"), User(2, "Wei Chang"), User(3, "Florian")]
+users_query_all = [User(id=1, username="Peter"), User(id=2, username="Wei Chang"), User(id=3, username="Florian")]
 get_users_response = \
     '[{"id": 1, "username": "Peter"}, {"id": 2, "username": "Wei Chang"}, {"id": 3, "username": "Florian"}]'
 
