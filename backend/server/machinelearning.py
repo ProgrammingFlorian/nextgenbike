@@ -17,5 +17,9 @@ def start_ml(json_data):
     return sf.continue_training(dataframe)
 
 
-def predict_on_data(json_data):
-    return sf.predict_df(pd.read_json(json_data))
+def predict_on_data(json_data) -> list:
+    df = pd.read_json(json_data)
+    if df.empty:
+        return []
+    else:
+        return sf.predict_df(pd.read_json(json_data))

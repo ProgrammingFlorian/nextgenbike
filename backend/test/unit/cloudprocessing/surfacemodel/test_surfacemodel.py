@@ -7,11 +7,10 @@ from test.unit.cloudprocessing.surfacemodel import (single_element_dataframe_no_
                                                     single_element_data_long_asphalt)
 
 
-def test_data_preparation_drop_no_terrain(single_element_dataframe_no_terrain):
-    x, y = sf.data_preparation(single_element_dataframe_no_terrain)
+def test_group_trip_second_no_terrain(single_element_dataframe_no_terrain):
+    grouped = sf.group_trip_second(single_element_dataframe_no_terrain)
 
-    assert len(x) == 0
-    assert len(y) == 0
+    assert grouped is None
 
 
 @pytest.mark.parametrize("single_element_df", [
