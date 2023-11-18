@@ -4,12 +4,12 @@ import datetime
 from multiprocessing import Process
 
 from sqlalchemy import func, and_
-from app.extensions import db
-from app.models import User, Trip, Sensors, Terrain
+from server.app.extensions import db
+from server.app.models import User, Trip, Sensors, Terrain
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
-import machinelearning as ml
-from cloudprocessing import dataprocessing
+import server.machinelearning as ml
+from server.cloudprocessing import dataprocessing
 
 url = Blueprint('urls', __name__)
 

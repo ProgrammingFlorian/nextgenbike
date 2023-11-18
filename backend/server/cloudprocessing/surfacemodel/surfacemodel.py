@@ -1,9 +1,13 @@
+from typing import Union, Any
+
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from numpy import ndarray, dtype
+from pandas import DataFrame
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
@@ -14,14 +18,17 @@ import server.cloudprocessing.util as util
 from server.cloudprocessing.surfacemodel import config as config
 
 
-def data_preparation(df):
+def data_preparation(df: DataFrame) -> Any:
     df.dropna(subset=['terrain'], inplace=True)
+    x, y = [], []
+
+    if df.size == 0:
+        return np.array(x), np.array(y)
 
     df['time_second'] = df['time'].map(lambda x: pd.Timestamp(x).floor(freq='S'))
     df['time'] = df['time'].map(pd.Timestamp.timestamp)
 
     grouped = df.groupby([df.trip_id, df.time_second])  # grouped.get_group(1)
-    x, y = [], []
 
     # data verification
     data_errors = ['GOOD', 'LONG', 'SHORT']
