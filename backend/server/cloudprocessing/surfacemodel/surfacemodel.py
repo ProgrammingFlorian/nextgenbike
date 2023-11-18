@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from numpy import ndarray, dtype
 from pandas import DataFrame
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -47,7 +46,7 @@ def data_preparation(df: DataFrame) -> Any:
             data_checking[0] += 1
         elif input_length > config.batch_size:
             data_checking[1] += 1
-            train_input = train_input[:config.batch_size]
+            train_input = train_input[:config.batch_size].flatten()
         else:
             data_checking[2] += 1
             n_missing_rows = config.batch_size - len(train_input)
@@ -62,7 +61,6 @@ def data_preparation(df: DataFrame) -> Any:
 
     for i in range(len(data_errors)):
         print(data_errors[i], ": ", data_checking[i])
-
     print('Mean Frequency is: %f Hz' % (actual_length / total_samples))
 
     return np.array(x), np.array(y)

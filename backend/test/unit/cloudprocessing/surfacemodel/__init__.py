@@ -2,6 +2,8 @@ import pandas as pd
 import pytest
 
 from server.cloudprocessing import config
+from server.cloudprocessing.surfacemodel.config import batch_size
+
 
 @pytest.fixture
 def single_element_dataframe_no_terrain():
@@ -24,7 +26,9 @@ def single_element_data_asphalt():
 
 def single_element_data_long_asphalt():
     df = single_element_data_asphalt()
+    dataframe = pd.DataFrame()
 
-    long_dataframe = pd.DataFrame(columns=config.preprocessed_columns, )
+    for i in range(batch_size * 2):
+        dataframe = pd.concat([dataframe, df])
 
-    return long_dataframe
+    return dataframe
