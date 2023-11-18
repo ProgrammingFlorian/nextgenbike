@@ -14,7 +14,7 @@ def create_app():
 
 
 def register_extensions(app):
-    app.config.from_object(Config)
+    app.sf_config.from_object(Config)
     db.init_app(app)
     migrate.init_app(app, db)
     return None

@@ -1,8 +1,14 @@
 import pandas as pd
 import requests
+from pandas import DataFrame
 from requests.exceptions import ChunkedEncodingError
 
 from server.server import config as config
+
+
+def format_time(dataframe: DataFrame) -> DataFrame:
+    dataframe['time'] = pd.to_datetime(dataframe['time'], format='mixed')
+    return dataframe
 
 
 def get_data_db():
@@ -65,7 +71,7 @@ def pre_processing(dataframe):
 
     crash_count = 0
 
-    dataframe['time'] = pd.to_datetime(dataframe['time'], format='mixed')
+    dataframe = format_time(dataframe)
     for i, row in dataframe.iterrows():
         if (pavement_start <= row.time <= pavement_end or pavement_start_2 <= row.time <= pavement_end_2 or
                 pavement_start_3 <= row.time <= pavement_end_3):

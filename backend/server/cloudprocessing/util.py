@@ -3,7 +3,7 @@ import torch
 from server.server import config as config
 
 
-def predict(model, pred_input):
+def predict(model, pred_input) -> torch.Tensor:
     hidden = model.initHidden()
 
     for data_row in pred_input:

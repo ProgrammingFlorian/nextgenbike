@@ -1,9 +1,12 @@
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from pandas import DataFrame
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
@@ -12,39 +15,56 @@ from server import server as dp, server as rnn, server as util
 from server.server import config as config
 
 
-def data_preparation(df):
+def group_trip_second(df: DataFrame):
     df.dropna(subset=['terrain'], inplace=True)
+    if df.size == 0:
+        return None
 
     df['time_second'] = df['time'].map(lambda x: pd.Timestamp(x).floor(freq='S'))
     df['time'] = df['time'].map(pd.Timestamp.timestamp)
 
-    grouped = df.groupby([df.trip_id, df.time_second])  # grouped.get_group(1)
+    return df.groupby([df.trip_id, df.time_second])
+
+
+def normalize_to_batch_length(df: DataFrame, length):
+    if len(df.columns) != config.n_training_cols:
+        raise Exception("Wrong number of input columns (should be)", config.n_training_cols,
+                        ", please check data.\n"
+                        "But input was: ", df)
+
+    array = df.to_numpy()
+    datacheck = [0, 0, 0]
+
+    if len(array) == config.batch_size:
+        datacheck[0] = 1
+    elif len(array) > config.batch_size:
+        datacheck[1] = 1
+        array = array[:config.batch_size].flatten()
+    else:
+        datacheck[2] = 1
+        n_missing_rows = config.batch_size - len(array)
+        for _ in range(n_missing_rows):
+            fake_array = [1] * config.n_training_cols
+            array = np.append(array, fake_array)
+
+    return array, datacheck
+
+
+def data_preparation(df: DataFrame):
+    grouped = group_trip_second(df)
     x, y = [], []
 
-    # data verification
     data_errors = ['GOOD', 'LONG', 'SHORT']
     data_checking = [0, 0, 0]
-    total_samples, actual_length = 0, 0
+    total_trip_seconds, actual_length = len(grouped), 0
 
     for i, (trip_seconds, table) in enumerate(grouped):
         train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
 
-        train_input = train_input.to_numpy()
+        actual_length += len(train_input)
 
-        total_samples += 1
-        input_length = len(train_input)
-        actual_length += input_length
-        if input_length == config.batch_size:
-            data_checking[0] += 1
-        elif input_length > config.batch_size:
-            data_checking[1] += 1
-            train_input = train_input[:config.batch_size]
-        else:
-            data_checking[2] += 1
-            n_missing_rows = config.batch_size - len(train_input)
-            for _ in range(n_missing_rows):
-                fake_array = [1] * config.n_training_cols
-                train_input = np.append(train_input, fake_array)
+        train_input, d_check = normalize_to_batch_length(train_input, config.batch_size)
+        data_checking = np.add(data_checking, d_check)
 
         train_target = table.terrain.min()
 
@@ -53,8 +73,7 @@ def data_preparation(df):
 
     for i in range(len(data_errors)):
         print(data_errors[i], ": ", data_checking[i])
-
-    print('Mean Frequency is: %f Hz' % (actual_length / total_samples))
+    print('Mean Frequency is: %f Hz' % (actual_length / total_trip_seconds))
 
     return np.array(x), np.array(y)
 
@@ -172,13 +191,9 @@ def train(model, dataframe):
     print_testing_accuracy(model=model, test_loader=test_loader, criterion=criterion, classes=config.classes)
 
 
-def predict_df(dataframe):
-    print(dataframe.head())
-    dataframe['time'] = pd.to_datetime(dataframe['time'], format='mixed')
-    dataframe['time_second'] = dataframe.time.map(lambda x: pd.Timestamp(x).floor(freq='S'))
-    dataframe['time'] = dataframe.time.map(pd.Timestamp.timestamp)
-
-    grouped = dataframe.groupby([dataframe['trip_id'], dataframe['time_second']])
+def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
+    dataframe = dp.format_time(dataframe)
+    grouped = group_trip_second(dataframe)
 
     x = []
     id_list, time_list, lat_list, lon_list = [], [], [], []
@@ -192,17 +207,13 @@ def predict_df(dataframe):
 
         train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
 
-        if len(train_input.columns) != config.n_training_cols:
-            raise Exception("Wrong number of input columns (should be)", config.n_training_cols,
-                            ", please check data.\n"
-                            "But input was: ", train_input)
+
 
         train_input = train_input.to_numpy()
 
         if len(train_input) > config.batch_size:
             train_input = train_input[:config.batch_size]
         else:
-            n_missing_rows = config.batch_size - len(train_input)
             for _ in range(config.batch_size - len(train_input)):
                 fake_array = [1] * config.n_training_cols
                 train_input = np.append(train_input, fake_array)
