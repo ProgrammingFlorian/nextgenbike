@@ -1,6 +1,6 @@
-import webapp.routes as routes
-from webapp.config import Config
-from webapp.extensions import db, migrate
+import app.routes as routes
+from app.config import Config
+from app.extensions import db, migrate
 from flask import Flask
 from flask_cors import CORS
 

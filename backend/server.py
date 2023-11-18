@@ -1,1 +1,1 @@
-from webapp import __init__
+from app import __init__

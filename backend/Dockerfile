@@ -5,7 +5,7 @@ RUN pip install -r requirements.txt
 
 COPY cloudprocessing/*.py cloudprocessing/
 
-COPY webapp/ server/app/
+COPY app/ server/app/
 COPY migrations/ server/migrations/
 COPY ./server/*.py server/
 

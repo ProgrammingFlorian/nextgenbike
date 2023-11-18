@@ -5,8 +5,8 @@ import os
 
 from cloudprocessing import config
 from cloudprocessing.surfacemodel import surfacemodel as sf
-import webapp.database_functions as dbf
-import webapp.utils as utils
+import app.database_functions as dbf
+import app.utils as utils
 
 
 def initiate_ml(dataframe):
