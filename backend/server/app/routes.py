@@ -1,15 +1,9 @@
 import json
-import datetime
 
-from multiprocessing import Process
-
-from sqlalchemy import func, and_
-from server.app.extensions import db
-from server.app.models import User, Trip, Sensors, Terrain
 from flask import request, Blueprint
 from marshmallow import Schema, ValidationError, fields
-import server.machinelearning as ml
-from server.cloudprocessing import dataprocessing
+
+from server import server as dbf, server as utils, server as ml
 
 url = Blueprint('urls', __name__)
 
@@ -53,31 +47,25 @@ def index():
     return 'Welcome to the Next-Gen Bike backend!'
 
 
+@url.route('/users', methods=['GET'])
+def get_users():
+    users = dbf.get_all_users()
+    return utils.dict_array_as_json(users), 200
+
+
 @url.route('/users', methods=['POST'])
-def users():
+def create_user():
     schema = CreateUserSchema()
     try:
-        data = schema.load(request.json)
+        request_data = schema.load(request.json)
     except ValidationError as err:
         print(f"ValidationError {err}")
         return json.dumps(err.messages), 400
-    print(f"Received request with payload {data}")
+    print(f"Received request with payload {request_data}")
 
-    user = User(username=data['username'])
-    db.session.add(user)
-    db.session.commit()
-
+    user = dbf.create_user(request_data['username'])
     response = json.dumps({"user_id": user.id})
 
-    return response, 200
-
-
-@url.route('/users', methods=['GET'])
-def get_users():
-    data = User.query.all()
-    print(data)
-    response = json.dumps([d.as_dict() for d in data], default=str)
-    print(response)
     return response, 200
 
 
@@ -85,15 +73,12 @@ def get_users():
 def trip_start():
     schema = TripStartSchema()
     try:
-        data = schema.load(request.json)
+        request_data = schema.load(request.json)
     except ValidationError as err:
         return json.dumps(err.messages), 400
-    print(f"Received request with payload {data}")
+    print(f"Received request with payload {request_data}")
 
-    trip = Trip(name=data['name'], user_id=data['user_id'])
-    db.session.add(trip)
-    db.session.commit()
-
+    trip = dbf.create_trip(request_data['name'], request_data['user_id'])
     response = json.dumps({"trip_id": trip.id})
 
     return response, 200
@@ -103,84 +88,45 @@ def trip_start():
 def trip_end():
     schema = TripIdSchema()
     try:
-        data = schema.load(request.json)
+        request_data = schema.load(request.json)
     except ValidationError as err:
         return json.dumps(err.messages), 400
-    print(f"Received request with payload {data}")
+    print(f"Received request with payload {request_data}")
 
-    trip = db.session.execute(db.select(Trip).filter_by(id=data['trip_id'])).scalar_one()
-    trip.end = datetime.datetime.utcnow()
-
-    db.session.commit()
-
-    response = f"Finished trip {trip.id} at {trip.end}"
-
-    return response, 200
-
-
-@url.route('/sensor', methods=['PUT'])
-def sensor():
-    schema = SensorSchema()
-    try:
-        data = schema.load(request.json)
-    except ValidationError as err:
-        return json.dumps(err.messages), 400
-    print(f"Received request with payload {data}")
-
-    for i in range(len(data['time'])):
-        sensor_row = Sensors(time=data['time'][i], trip_id=data['trip_id'], vibration=data['vibration'][i],
-                             latitude=data['latitude'][i], longitude=data['longitude'][i],
-                             acceleration_x=data['acceleration_x'][i], acceleration_y=data['acceleration_y'][i],
-                             acceleration_z=data['acceleration_z'][i], gyroscope_x=data['gyroscope_x'][i],
-                             gyroscope_y=data['gyroscope_y'][i], gyroscope_z=data['gyroscope_z'][i])
-        db.session.add(sensor_row)
-
-    db.session.commit()
-
-    # pred_process = Process(target=pred, daemon=True)
-    # pred_process.start()
-    pred()
-
-    return 'Submitted sensor data', 200
-
-
-last_time_pred = datetime.datetime.now().replace(microsecond=0)
-
-
-def pred():
-    global last_time_pred
-    current_time = datetime.datetime.now().replace(microsecond=0)
-    relevant_time_ago = current_time - datetime.timedelta(seconds=10)
-    if last_time_pred < relevant_time_ago or True:
-        last_time_pred = datetime.datetime.now()
-
-        data = Sensors.query.filter(Sensors.time > relevant_time_ago).all()
-        # data = Sensors.query.all()
-        data_json = json.dumps([d.as_dict() for d in data], default=str)
-        results = ml.predict_on_data(data_json)
-        for result in results:
-            r = Terrain(result['time'], result['trip_id'], result['latitude'], result['longitude'],
-                        result['terrain'])
-            db.session.add(r)
-        db.session.commit()
-
-
-@url.route('/sensor', methods=['GET'])
-def get_sensor():
-    sensors = Sensors.query.all()
-
-    response = json.dumps([sens.as_dict() for sens in sensors], default=str)
+    trip = dbf.end_trip(request_data['trip_id'])
+    response = json.dumps({"status": "success", "trip_id": trip.id, "trip_end": trip.end}, default=str)
 
     return response, 200
 
 
 @url.route('/trips', methods=['GET'])
 def get_trips():
-    data = Trip.query.all()
+    trips = dbf.get_trip_data()
+    return utils.dict_array_as_json(trips), 200
 
-    response = json.dumps([d.as_dict() for d in data], default=str)
 
-    return response, 200
+@url.route('/sensor', methods=['PUT'])
+def put_sensor_data():
+    schema = SensorSchema()
+    try:
+        request_data = schema.load(request.json)
+    except ValidationError as err:
+        return json.dumps(err.messages), 400
+    print(f"Received request with payload {request_data}")
+
+    dbf.put_sensor_data(request_data)
+
+    ml.try_to_predict()
+    # pred_process = Process(target=ml.try_to_predict, daemon=True)
+    # pred_process.start()
+
+    return json.dumps({"status": "success"}), 200
+
+
+@url.route('/sensor', methods=['GET'])
+def get_sensor():
+    sensors = dbf.get_sensor_data()
+    return utils.dict_array_as_json(sensors), 200
 
 
 @url.route('/terrain', methods=['POST'])
@@ -190,53 +136,20 @@ def get_terrain():
         request_data = schema.load(request.json)
     except ValidationError as err:
         return json.dumps(err.messages), 400
+    print(f"Received request with payload {request_data}")
 
     if 'trip_id' not in request_data:
-        data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
-                                            func.min(Terrain.terrain).label('terrain'))
-                .group_by(Terrain.latitude, Terrain.longitude)
-                .order_by(Terrain.time.asc())).all()
-
+        terrain = dbf.get_terrain_data()
     else:
-        data = (Terrain.query.with_entities(Terrain.latitude, Terrain.longitude,
-                                            func.min(Terrain.terrain).label('terrain'))
-                .group_by(Terrain.latitude, Terrain.longitude)
-                .filter_by(trip_id=request_data['trip_id'])
-                .order_by(Terrain.time.asc())).all()
+        terrain = dbf.get_terrain_data_by_trip_id(request_data['trip_id'])
 
-    response = []
-    for d in data:
-        response.append({"latitude": d[0], "longitude": d[1], "terrain": d[2]})
-
-    return response, 200
+    return utils.dict_array_as_json(terrain), 200
 
 
 @url.route('/retrain', methods=['POST'])
 def retrain():
-    data = Sensors.query.all()
-    data_json = json.dumps([d.as_dict() for d in data], default=str)
-    ml.start_ml(data_json)
+    sensors = dbf.get_sensor_data()
+    sensors_json = utils.dict_array_as_json(sensors)
+    ml.start_ml(sensors_json)
 
-    return "Started retraining model", 200
-
-
-@url.route('/sql', methods=['GET'])
-def sql():
-    dataframe = dataprocessing.pre_processing(dataprocessing.get_dataframe())
-    dataframe.dropna(subset=['terrain'], inplace=True)
-    for i, row in dataframe.iterrows():
-        _time = dataframe.loc[i, 'time']
-        _trip_id = dataframe.loc[i, 'trip_id']
-        _latitude = dataframe.loc[i, 'latitude']
-        _longitude = dataframe.loc[i, 'longitude']
-        _terrain = dataframe.loc[i, 'terrain']
-        print(_trip_id)
-        print(_latitude)
-        print(_longitude)
-        print(type(_time))
-        print(_time.to_pydatetime())
-        t = Terrain(_time.to_pydatetime(), _trip_id, _latitude, _longitude, _terrain)
-        db.session.add(t)
-    db.session.commit()
-
-    return "done", 200
+    return json.dumps({"status": "success", "message": "started retraining the model"}), 200

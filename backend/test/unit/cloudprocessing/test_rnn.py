@@ -1,6 +1,4 @@
-import pytest
-
-from server.cloudprocessing.surfacemodel import config as sf_config
+from server.server import config as sf_config
 from test.unit.cloudprocessing import example_sf_rnn
 
 

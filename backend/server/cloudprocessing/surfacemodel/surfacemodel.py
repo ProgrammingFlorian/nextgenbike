@@ -8,10 +8,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
-import server.cloudprocessing.dataprocessing as dp
-import server.cloudprocessing.rnn as rnn
-import server.cloudprocessing.util as util
-from server.cloudprocessing.surfacemodel import config as config
+from server import server as dp, server as rnn, server as util
+from server.server import config as config
 
 
 def data_preparation(df):

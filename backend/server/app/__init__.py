@@ -1,4 +1,4 @@
-import server.app.routes as routes
+import app.routes as routes
 from server.app.config import Config
 from server.app.extensions import db, migrate
 from flask import Flask

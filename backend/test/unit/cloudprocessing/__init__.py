@@ -1,7 +1,7 @@
 import pytest
 
-from server.cloudprocessing import rnn
-from server.cloudprocessing.surfacemodel import config as sf_config
+from server.server import rnn
+from server.server import config as sf_config
 
 
 @pytest.fixture

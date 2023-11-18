@@ -1,6 +1,6 @@
 import torch
 
-from server.cloudprocessing.surfacemodel import config as config
+from server.server import config as config
 
 
 def predict(model, pred_input):
