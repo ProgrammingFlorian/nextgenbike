@@ -1,4 +1,5 @@
 import datetime
+import os
 from unittest import mock
 
 import pandas as pd
@@ -32,19 +33,30 @@ def test_start_ml(initiate_ml, exists, surfacemodel_path):
     initiate_ml.assert_called_with(pd.read_json(json))
 
 
-@mock.patch("machinelearning.config.surfacemodel_path", return_value="test_model_path")
-@mock.patch("machinelearning.os.path.exists", return_value=True)
+ospathexists = os.path.exists
+
+
+def mock_file_exists(file):
+    global ospathexists
+    if file == "surfacemodel/test_model_path":
+        return True
+    else:
+        return ospathexists(file)
+
+
+@mock.patch("machinelearning.config.surfacemodel_path", "test_model_path")
+@mock.patch("machinelearning.os.path.exists", side_effect=mock_file_exists)
 @mock.patch("machinelearning.sf.continue_training", return_value="return")
-def test_start_ml(continue_training, exists, surfacemodel_path):
+def test_start_ml(continue_training, exists):
     test_dataframe()
     json = test_dataframe_string()
     result = ml.start_ml(json)
 
     assert result == "return"
     exists.assert_called_with("surfacemodel/test_model_path")
-    surfacemodel_path.assert_called_with()
 
-    continue_training.assert_called_with(pd.read_json(json))
+    pandas.testing.assert_frame_equal(continue_training.call_args[0][0], pd.read_json(json))
+
 
 
 @mock.patch("machinelearning.last_time_pred", test.test_date)
