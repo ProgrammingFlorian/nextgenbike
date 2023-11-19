@@ -2,11 +2,13 @@ import datetime
 from unittest import mock
 
 import pandas as pd
+import pandas.testing
 from freezegun import freeze_time
 
 import machinelearning as ml
 import test
-from test.unit.cloudprocessing.surfacemodel import single_element_dataframe_string
+from test.unit.cloudprocessing.surfacemodel import single_element_dataframe_string, test_dataframe_string, \
+    test_dataframe
 
 
 @mock.patch("machinelearning.sf.initiate")
@@ -34,7 +36,8 @@ def test_start_ml(initiate_ml, exists, surfacemodel_path):
 @mock.patch("machinelearning.os.path.exists", return_value=True)
 @mock.patch("machinelearning.sf.continue_training", return_value="return")
 def test_start_ml(continue_training, exists, surfacemodel_path):
-    json = single_element_dataframe_string("null")
+    test_dataframe()
+    json = test_dataframe_string()
     result = ml.start_ml(json)
 
     assert result == "return"
@@ -44,13 +47,12 @@ def test_start_ml(continue_training, exists, surfacemodel_path):
     continue_training.assert_called_with(pd.read_json(json))
 
 
-@mock.patch("machinelearning.last_time_pred", return_value=test.test_date)
+@mock.patch("machinelearning.last_time_pred", test.test_date)
 @freeze_time(test.test_date.__add__(datetime.timedelta(seconds=2)))
 @mock.patch("machinelearning.predict_on_data")
-def test_try_to_predict_none(predict_on_data, now):
+def test_try_to_predict_none(predict_on_data):
     ml.try_to_predict()
 
-    now.assert_called_with()
     assert not predict_on_data.called
 
 
@@ -66,4 +68,4 @@ def test_predict(predict_df):
     result = ml.predict_on_data(json)
     assert result == "return_value"
 
-    predict_df.assert_called_with(pd.read_json(json))
+    pandas.testing.assert_frame_equal(predict_df.call_args[0][0], pd.read_json(json))
