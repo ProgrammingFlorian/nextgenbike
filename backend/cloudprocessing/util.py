@@ -1,11 +1,12 @@
 import torch
 
-from app import config
+from cloudprocessing.surfacemodel import config
 
 
 def predict(model, pred_input) -> torch.Tensor:
     hidden = model.initHidden()
 
+    output = [.0, .0, .0, .0]
     for data_row in pred_input:
         for i in range(0, len(data_row), config.n_training_cols):
             model_input = data_row[None, i:i + config.n_training_cols].float()

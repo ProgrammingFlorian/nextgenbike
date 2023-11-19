@@ -23,12 +23,16 @@ def create_trip(name, user_id) -> Trip:
     db.session.add(trip)
     db.session.commit()
 
+    return Trip()
+
 
 def end_trip(trip_id) -> Trip:
     trip = db.session.execute(db.select(Trip).filter_by(id=trip_id)).scalar_one()
     trip.end = datetime.datetime.utcnow()
 
     db.session.commit()
+
+    return trip()
 
 
 def put_sensor_data(sensor_data):
