@@ -1,8 +1,12 @@
+import os
+from unittest import mock
+
 import pytest
 
 import cloudprocessing.surfacemodel.config as sf_config
 import cloudprocessing.surfacemodel.surfacemodel as sf
-from test.unit.cloudprocessing.surfacemodel import single_element_dataframe, single_element_data_long_asphalt, test_dataframe
+from test.unit.cloudprocessing.surfacemodel import single_element_dataframe, single_element_data_long_asphalt, \
+    test_dataframe
 
 
 def test_group_trip_second_no_terrain():
@@ -12,7 +16,7 @@ def test_group_trip_second_no_terrain():
 
 
 @pytest.mark.parametrize("example_dataframe", [
-    single_element_data_asphalt(), single_element_dataframe("0"), test_dataframe()
+    single_element_dataframe("0"), single_element_data_long_asphalt(), test_dataframe()
 ])
 def test_data_preparation_norm_len(example_dataframe):
     x, y = sf.data_preparation(example_dataframe)
@@ -22,9 +26,9 @@ def test_data_preparation_norm_len(example_dataframe):
 
 
 @pytest.mark.parametrize("example_dataframe", [
-    single_element_data_asphalt(), single_element_data_long_asphalt(), test_dataframe()
+    single_element_dataframe("0"), single_element_data_long_asphalt(), test_dataframe()
 ])
-@unittest.mock.patch('cloudprocessing.surfacemodel.surfacemodel.torch.save')
+@mock.patch('cloudprocessing.surfacemodel.surfacemodel.torch.save')
 def test_sf_runs(torch_save, example_dataframe):
     sf.initiate(example_dataframe)
 
