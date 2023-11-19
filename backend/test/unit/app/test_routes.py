@@ -1,5 +1,7 @@
 import datetime
 
+import test
+from test import test_date
 from test.unit.app import client
 import unittest.mock as mock
 from app.models import User, Trip, Sensors, Terrain
@@ -45,19 +47,19 @@ def test_trip_start(create_trip, client):
 
 
 @mock.patch("app.routes.dbf.end_trip",
-            return_value=Trip(name="test_trip", id=1, end=datetime.datetime(2020, 10, 5, 18, 13)))
+            return_value=Trip(name="test_trip", id=1, end=test_date))
 def test_trip_end(end_trip, client):
     result = client.post("/trip/end", data='{"trip_id": 1}', headers=headers)
 
     end_trip.assert_called_with(1)
 
     json = result.data.decode()
-    assert json == '{"status": "success", "trip_id": 1, "trip_end": "2020-10-05 18:13:00"}'
+    assert json == '{"status": "success", "trip_id": 1, "trip_end": "2020-10-05 18:13:03"}'
 
 
 @mock.patch("app.routes.dbf.get_trip_data",
             return_value=[
-                Trip(id=1, start=datetime.datetime(2020, 10, 5, 18, 13, 3), end=datetime.datetime(2020, 10, 6, 1),
+                Trip(id=1, start=test.test_date, end=datetime.datetime(2020, 10, 6, 1),
                      name="my first trip", user_id=1)])
 def test_get_trips(get_trip_data, client):
     result = client.get("/trips")
@@ -110,7 +112,7 @@ def test_put_sensor_data(try_to_predict, put_sensor_data, client):
 
 
 @mock.patch("app.routes.dbf.get_sensor_data", return_value=[
-    Sensors(time=datetime.datetime(2020, 10, 5, 18, 13, 3), trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
+    Sensors(time=test.test_date, trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
             acceleration_x=1.1, acceleration_y=2.2, acceleration_z=3.3, gyroscope_x=3.5, gyroscope_y=8.5,
             gyroscope_z=-134.5, crash=0, terrain=3)])
 def test_get_sensor(get_sensor_data, client):
@@ -125,7 +127,7 @@ def test_get_sensor(get_sensor_data, client):
 
 
 @mock.patch("app.routes.dbf.get_terrain_data", return_value=[
-    Terrain(time=datetime.datetime(2020, 10, 5, 18, 13, 3), trip_id=1, latitude=54.3, longitude=3.4, terrain=2)])
+    Terrain(time=test.test_date, trip_id=1, latitude=54.3, longitude=3.4, terrain=2)])
 def test_get_terrain(get_terrain_data, client):
     result = client.post("/terrain", data="{}", headers=headers)
 
@@ -137,7 +139,7 @@ def test_get_terrain(get_terrain_data, client):
 
 
 @mock.patch("app.routes.dbf.get_terrain_data_by_trip_id", return_value=[
-    Terrain(time=datetime.datetime(2020, 10, 5, 18, 13, 3), trip_id=1, latitude=54.3, longitude=3.4, terrain=2)])
+    Terrain(time=test.test_date, trip_id=1, latitude=54.3, longitude=3.4, terrain=2)])
 def test_get_terrain_with_trip_id(get_terrain_data_by_trip_id, client):
     result = client.post("/terrain", data='{"trip_id": 1}', headers=headers)
 
@@ -149,7 +151,7 @@ def test_get_terrain_with_trip_id(get_terrain_data_by_trip_id, client):
 
 
 @mock.patch("app.routes.dbf.get_sensor_data", return_value=[
-    Sensors(time=datetime.datetime(2020, 10, 5, 18, 13, 3), trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
+    Sensors(time=test.test_date, trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
             acceleration_x=1.1, acceleration_y=2.2, acceleration_z=3.3, gyroscope_x=3.5, gyroscope_y=8.5,
             gyroscope_z=-134.5, crash=0, terrain=3)])
 @mock.patch("app.routes.ml.start_ml")

@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 import os
 
-from cloudprocessing import config
+from cloudprocessing.surfacemodel import config
 from cloudprocessing.surfacemodel import surfacemodel as sf
 import app.database_functions as dbf
 import app.utils as utils
@@ -44,4 +44,4 @@ def predict_on_data(json_data) -> list:
     if df.empty:
         return []
     else:
-        return sf.predict_df(pd.read_json(json_data))
+        return sf.predict_df(df)
