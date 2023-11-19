@@ -138,6 +138,7 @@ def train_model(model, train_loader, num_epochs=config.num_training_epochs, lr=c
             print("Epoch", e + 1, "Training Loss:", total_train_loss)
 
     print("Training FINISHED")
+
     torch.save(model.state_dict(), config.surfacemodel_path)
 
     return model, criterion
