@@ -3,7 +3,7 @@ import requests
 from pandas import DataFrame
 from requests.exceptions import ChunkedEncodingError
 
-from app import config
+from cloudprocessing.surfacemodel import config
 
 
 def format_time(dataframe: DataFrame) -> DataFrame:
@@ -12,7 +12,7 @@ def format_time(dataframe: DataFrame) -> DataFrame:
 
 
 def get_data_db():
-    return requests.get('http://104.248.148.208/sensor', timeout=10).text
+    return requests.get('http://localhost:5000/sensor', timeout=10).text
 
 
 def get_dataframe():

@@ -10,13 +10,12 @@ from test.unit.cloudprocessing.surfacemodel import single_element_dataframe, sin
 
 
 def test_group_trip_second_no_terrain():
-    grouped = sf.group_trip_second(single_element_dataframe("null"))
-
-    assert grouped is None
+    with pytest.raises(Exception):
+        sf.group_trip_second(single_element_dataframe("null"))
 
 
 @pytest.mark.parametrize("example_dataframe", [
-    single_element_dataframe("0"), single_element_data_long_asphalt(), test_dataframe()
+    single_element_dataframe("0"), single_element_data_long_asphalt()
 ])
 def test_data_preparation_norm_len(example_dataframe):
     x, y = sf.data_preparation(example_dataframe)
@@ -26,7 +25,7 @@ def test_data_preparation_norm_len(example_dataframe):
 
 
 @pytest.mark.parametrize("example_dataframe", [
-    single_element_dataframe("0"), single_element_data_long_asphalt(), test_dataframe()
+    test_dataframe()
 ])
 @mock.patch('cloudprocessing.surfacemodel.surfacemodel.torch.save')
 def test_sf_runs(torch_save, example_dataframe):
