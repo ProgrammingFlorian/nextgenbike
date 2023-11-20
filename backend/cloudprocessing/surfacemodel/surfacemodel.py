@@ -20,7 +20,7 @@ from cloudprocessing import dataprocessing as dp
 def group_trip_second(df: DataFrame):
     df.dropna(subset=['terrain'], inplace=True)
     if df.size == 0:
-        return None
+        raise Exception("No target values (terrain) in DataFrame found")
 
     df['time_second'] = df['time'].map(lambda x: pd.Timestamp(x).floor(freq='S'))
     df['time'] = df['time'].map(pd.Timestamp.timestamp)
@@ -34,26 +34,26 @@ def normalize_to_batch_length(df: DataFrame, length):
                         ", please check data.\n"
                         "But input was: ", df)
 
-    array = df.to_numpy()
+    array = df.to_numpy().flatten()
     datacheck = [0, 0, 0]
 
-    if len(array) == config.batch_size:
+    if len(array) == length:
         datacheck[0] = 1
-    elif len(array) > config.batch_size:
+    elif len(array) > length:
         datacheck[1] = 1
-        array = array[:config.batch_size].flatten()
     else:
         datacheck[2] = 1
-        n_missing_rows = config.batch_size - len(array)
-        for _ in range(n_missing_rows):
-            fake_array = [1] * config.n_training_cols
+        for _ in range(length - len(array)):
+            fake_array = [1] * (length - len(array))
             array = np.append(array, fake_array)
+    array = array[:length].flatten()
 
     return array, datacheck
 
 
 def data_preparation(df: DataFrame):
     grouped = group_trip_second(df)
+
     x, y = [], []
 
     data_errors = ['GOOD', 'LONG', 'SHORT']
@@ -65,10 +65,14 @@ def data_preparation(df: DataFrame):
 
         actual_length += len(train_input)
 
-        train_input, d_check = normalize_to_batch_length(train_input, config.batch_size)
+        train_input, d_check = normalize_to_batch_length(train_input, config.batch_size * config.n_training_cols)
         data_checking = np.add(data_checking, d_check)
 
         train_target = table.terrain.min()
+
+        if len(train_input) != config.n_training_cols * config.batch_size:
+            print(train_input)
+            raise Exception("Invalid Array detected")
 
         x.append(train_input)
         y.append(train_target)
@@ -201,6 +205,9 @@ def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
     x = []
     id_list, time_list, lat_list, lon_list = [], [], [], []
     results = []
+    data_errors = ['GOOD', 'LONG', 'SHORT']
+    data_checking = [0, 0, 0]
+    total_trip_seconds, actual_length = len(grouped), 0
 
     for i, (trip_seconds, table) in enumerate(grouped):
         id_list.append(trip_seconds[0])
@@ -212,14 +219,18 @@ def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
 
         train_input = train_input.to_numpy()
 
-        if len(train_input) > config.batch_size:
-            train_input = train_input[:config.batch_size]
-        else:
-            for _ in range(config.batch_size - len(train_input)):
-                fake_array = [1] * config.n_training_cols
-                train_input = np.append(train_input, fake_array)
+        train_input, d_check = normalize_to_batch_length(train_input, config.batch_size * config.n_training_cols)
+        data_checking = np.add(data_checking, d_check)
+
+        if len(train_input) != config.n_training_cols * config.batch_size:
+            print(train_input)
+            raise Exception("Invalid Array detected")
 
         x.append(train_input)
+
+    for i in range(len(data_errors)):
+        print(data_errors[i], ": ", data_checking[i])
+    print('Mean Frequency is: %f Hz' % (actual_length / total_trip_seconds))
 
     model = rnn.RNN(config.n_training_cols, config.n_hidden_layers, len(config.classes))
     model.load_state_dict(torch.load(config.surfacemodel_path))

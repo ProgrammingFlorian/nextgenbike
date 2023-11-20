@@ -1,5 +1,5 @@
 ### Create /user
-POST http://104.248.148.208/users
+POST http://localhost:5000/users
 Content-Type: application/json
 
 {
@@ -88,6 +88,6 @@ GET http://localhost:5000/users
 GET http://localhost:5000/sql
 
 ### Post retrain
-POST http://104.248.148.208/retrain
+POST http://localhost:5000/retrain
 
 ### Post sensor
