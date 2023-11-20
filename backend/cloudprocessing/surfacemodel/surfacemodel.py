@@ -12,8 +12,8 @@ from sklearn.preprocessing import StandardScaler
 from torch.utils.data import TensorDataset, DataLoader
 
 import cloudprocessing.rnn as rnn
-import cloudprocessing.util as util
 import cloudprocessing.surfacemodel.config as sf_config
+import cloudprocessing.util as util
 from cloudprocessing import dataprocessing as dp
 
 
@@ -233,7 +233,6 @@ def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
     for i in range(len(id_list)):
         results.append({"trip_id": id_list[i], "time": time_list[i], "latitude": lat_list[i], "longitude": lon_list[i],
                         "terrain": terrain_guess[i]})
-
     return results
 
 

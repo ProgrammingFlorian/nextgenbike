@@ -42,7 +42,7 @@ def predict_dataset(model, x):
 
         # convert output probabilities to predicted class
         _, pred = torch.max(output, 1)
-        predictions.append(pred)
+        predictions.append(pred.item())
 
     return predictions
 
