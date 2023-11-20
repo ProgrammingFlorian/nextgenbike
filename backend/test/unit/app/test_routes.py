@@ -1,10 +1,10 @@
 import datetime
+import unittest.mock as mock
 
 import test
+from app.models import User, Trip, Sensors
 from test import test_date
 from test.unit.app import client
-import unittest.mock as mock
-from app.models import User, Trip, Sensors, Terrain
 
 dbf_get_all_users = [User(id=1, username="Peter"), User(id=2, username="Wei Chang"), User(id=3, username="Florian")]
 dbf_create_user = User(id=1, username="Peter")
@@ -111,10 +111,11 @@ def test_put_sensor_data(try_to_predict, put_sensor_data, client):
     assert json == '{"status": "success"}'
 
 
-@mock.patch("app.routes.dbf.get_sensor_data", return_value=[
-    Sensors(time=test.test_date, trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
-            acceleration_x=1.1, acceleration_y=2.2, acceleration_z=3.3, gyroscope_x=3.5, gyroscope_y=8.5,
-            gyroscope_z=-134.5, crash=0, terrain=3)])
+@mock.patch("app.routes.dbf.get_sensor_data",
+            return_value=[Sensors(time=test.test_date, trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
+                                  acceleration_x=1.1, acceleration_y=2.2, acceleration_z=3.3, gyroscope_x=3.5,
+                                  gyroscope_y=8.5,
+                                  gyroscope_z=-134.5, crash=0, terrain=3)])
 def test_get_sensor(get_sensor_data, client):
     result = client.get("/sensor")
 
@@ -126,43 +127,44 @@ def test_get_sensor(get_sensor_data, client):
                     '"gyroscope_y": 8.5, "gyroscope_z": -134.5, "crash": 0, "terrain": 3}]')
 
 
-@mock.patch("app.routes.dbf.get_terrain_data", return_value=[
-    Terrain(time=test.test_date, trip_id=1, latitude=54.3, longitude=3.4, terrain=2)])
+@mock.patch("app.routes.dbf.get_terrain_data",
+            return_value=[{'time': '2020-10-05 18:13:03', 'latitude': 1.303, 'longitude': 103.79, 'terrain': 1}])
 def test_get_terrain(get_terrain_data, client):
     result = client.post("/terrain", data="{}", headers=headers)
 
     get_terrain_data.assert_called_with()
 
     json = result.data.decode()
-    assert json == (('[{"time": "2020-10-05 18:13:03", "trip_id": 1, "latitude": 54.3, '
-                     '"longitude": 3.4, "terrain": 2}]'))
+    assert json == ('[{"latitude":1.303,"longitude":103.79,"terrain":1,"time":"2020-10-05 '
+                    '18:13:03"}]\n')
 
 
-@mock.patch("app.routes.dbf.get_terrain_data_by_trip_id", return_value=[
-    Terrain(time=test.test_date, trip_id=1, latitude=54.3, longitude=3.4, terrain=2)])
+@mock.patch("app.routes.dbf.get_terrain_data_by_trip_id",
+            return_value=[{'time': '2020-10-05 18:13:03', 'latitude': 1.303, 'longitude': 103.79, 'terrain': 1}])
 def test_get_terrain_with_trip_id(get_terrain_data_by_trip_id, client):
     result = client.post("/terrain", data='{"trip_id": 1}', headers=headers)
 
     get_terrain_data_by_trip_id.assert_called_with(1)
 
     json = result.data.decode()
-    assert json == (('[{"time": "2020-10-05 18:13:03", "trip_id": 1, "latitude": 54.3, '
-                     '"longitude": 3.4, "terrain": 2}]'))
+    assert json == ('[{"latitude":1.303,"longitude":103.79,"terrain":1,"time":"2020-10-05 '
+                    '18:13:03"}]\n')
 
 
-@mock.patch("app.routes.dbf.get_sensor_data", return_value=[
-    Sensors(time=test.test_date, trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
-            acceleration_x=1.1, acceleration_y=2.2, acceleration_z=3.3, gyroscope_x=3.5, gyroscope_y=8.5,
-            gyroscope_z=-134.5, crash=0, terrain=3)])
+@mock.patch("app.routes.dbf.get_sensor_data",
+            return_value=[Sensors(time=test.test_date, trip_id=1, vibration=1, latitude=5.0, longitude=3.3,
+                                  acceleration_x=1.1, acceleration_y=2.2, acceleration_z=3.3, gyroscope_x=3.5,
+                                  gyroscope_y=8.5,
+                                  gyroscope_z=-134.5, crash=0, terrain=3)])
 @mock.patch("app.routes.ml.start_ml")
 def test_retrain(start_ml, get_sensor_data, client):
     result = client.post("/retrain", headers=headers)
 
     get_sensor_data.assert_called_with()
     start_ml.assert_called_with('[{"time": "2020-10-05 18:13:03", "trip_id": 1, "vibration": 1, "latitude": '
-                                 '5.0, "longitude": 3.3, "acceleration_x": 1.1, "acceleration_y": 2.2, '
-                                 '"acceleration_z": 3.3, "gyroscope_x": 3.5, "gyroscope_y": 8.5, '
-                                 '"gyroscope_z": -134.5, "crash": 0, "terrain": 3}]')
+                                '5.0, "longitude": 3.3, "acceleration_x": 1.1, "acceleration_y": 2.2, '
+                                '"acceleration_z": 3.3, "gyroscope_x": 3.5, "gyroscope_y": 8.5, '
+                                '"gyroscope_z": -134.5, "crash": 0, "terrain": 3}]')
 
     json = result.data.decode()
     assert json == '{"status": "success", "message": "started retraining the model"}'

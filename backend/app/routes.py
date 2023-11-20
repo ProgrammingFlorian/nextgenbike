@@ -145,6 +145,7 @@ def get_terrain():
     else:
         terrain = dbf.get_terrain_data_by_trip_id(request_data['trip_id'])
 
+    print(terrain)
     return terrain, 200
 
 
