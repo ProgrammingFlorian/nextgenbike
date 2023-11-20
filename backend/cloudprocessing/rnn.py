@@ -11,7 +11,7 @@ class RNN(nn.Module):
         self.i2h = nn.Linear(in_features=input_size + hidden_size, out_features=hidden_size)
         self.h2o = nn.Linear(in_features=hidden_size, out_features=output_size)
         self.softmax = nn.LogSoftmax(dim=1)
-        # self.dropout = nn.Dropout(0.1)  # add if Overfitting starts kicking in
+        # self.dropout = nn.Dropout(0.1)  # add if over-fitting starts kicking in
 
     def forward(self, input, hidden):
         combined = torch.cat((input, hidden), 1)
@@ -20,5 +20,5 @@ class RNN(nn.Module):
         output = self.softmax(output)
         return output, hidden
 
-    def initHidden(self):
+    def init_hidden(self):
         return torch.zeros(1, self.hidden_size)

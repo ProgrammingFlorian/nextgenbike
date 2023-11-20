@@ -4,7 +4,7 @@ from cloudprocessing.surfacemodel import config as sf_config
 
 
 def predict(model, pred_input) -> torch.Tensor:
-    hidden = model.initHidden()
+    hidden = model.init_hidden()
 
     output = [.0, .0, .0, .0]
     for data_row in pred_input:

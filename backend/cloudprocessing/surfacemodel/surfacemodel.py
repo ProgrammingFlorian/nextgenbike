@@ -102,8 +102,7 @@ def gen_dataloader(x, y, test_size=0.2, random_state=0):
     return train_loader, test_loader
 
 
-def train_model(model, train_loader, num_epochs=sf_config.num_training_epochs, lr=sf_config.learning_rate,
-                momentum=sf_config.momentum):
+def train_model(model, train_loader, num_epochs=sf_config.num_training_epochs, lr=sf_config.learning_rate):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
@@ -114,13 +113,13 @@ def train_model(model, train_loader, num_epochs=sf_config.num_training_epochs, l
         total_train_loss = 0  # initialize the total training and validation loss
 
         for i, (training_input, target) in enumerate(train_loader):  # loop over the training set
-            hidden = model.initHidden()
+            hidden = model.init_hidden()
             model.zero_grad()
 
             output = [.0, .0, .0, .0]
             for data_row in training_input:
-                for i in range(0, len(data_row), sf_config.n_training_cols):
-                    model_input = data_row[None, i:i + sf_config.n_training_cols].float()
+                for j in range(0, len(data_row), sf_config.n_training_cols):
+                    model_input = data_row[None, j:j + sf_config.n_training_cols].float()
                     output, hidden = model(model_input, hidden)
 
             optimizer.zero_grad()
