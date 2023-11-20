@@ -61,20 +61,14 @@ def data_preparation(df: DataFrame):
     total_trip_seconds, actual_length = len(grouped), 0
 
     for i, (trip_seconds, table) in enumerate(grouped):
+        actual_length += len(table)
+
         train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
-
-        actual_length += len(train_input)
-
         train_input, d_check = normalize_to_batch_length(train_input, config.batch_size * config.n_training_cols)
+        x.append(train_input)
         data_checking = np.add(data_checking, d_check)
 
         train_target = table.terrain.min()
-
-        if len(train_input) != config.n_training_cols * config.batch_size:
-            print(train_input)
-            raise Exception("Invalid Array detected")
-
-        x.append(train_input)
         y.append(train_target)
 
     for i in range(len(data_errors)):
@@ -216,17 +210,9 @@ def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
         lon_list.append(table['longitude'].mean())
 
         train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
-
-        train_input = train_input.to_numpy()
-
         train_input, d_check = normalize_to_batch_length(train_input, config.batch_size * config.n_training_cols)
-        data_checking = np.add(data_checking, d_check)
-
-        if len(train_input) != config.n_training_cols * config.batch_size:
-            print(train_input)
-            raise Exception("Invalid Array detected")
-
         x.append(train_input)
+        data_checking = np.add(data_checking, d_check)
 
     for i in range(len(data_errors)):
         print(data_errors[i], ": ", data_checking[i])
