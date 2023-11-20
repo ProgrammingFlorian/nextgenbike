@@ -13,7 +13,7 @@ from torch.utils.data import TensorDataset, DataLoader
 
 import cloudprocessing.rnn as rnn
 import cloudprocessing.util as util
-import cloudprocessing.surfacemodel.config as config
+import cloudprocessing.surfacemodel.config as sf_config
 from cloudprocessing import dataprocessing as dp
 
 
@@ -29,8 +29,8 @@ def group_trip_second(df: DataFrame):
 
 
 def normalize_to_batch_length(df: DataFrame, length):
-    if len(df.columns) != config.n_training_cols:
-        raise Exception("Wrong number of input columns (should be)", config.n_training_cols,
+    if len(df.columns) != sf_config.n_training_cols:
+        raise Exception("Wrong number of input columns (should be)", sf_config.n_training_cols,
                         ", please check data.\n"
                         "But input was: ", df)
 
@@ -56,7 +56,6 @@ def data_preparation(df: DataFrame):
 
     x, y = [], []
 
-    data_errors = ['GOOD', 'LONG', 'SHORT']
     data_checking = [0, 0, 0]
     total_trip_seconds, actual_length = len(grouped), 0
 
@@ -64,15 +63,15 @@ def data_preparation(df: DataFrame):
         actual_length += len(table)
 
         train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
-        train_input, d_check = normalize_to_batch_length(train_input, config.batch_size * config.n_training_cols)
+        train_input, d_check = normalize_to_batch_length(train_input, sf_config.batch_size * sf_config.n_training_cols)
         x.append(train_input)
         data_checking = np.add(data_checking, d_check)
 
         train_target = table.terrain.min()
         y.append(train_target)
 
-    for i in range(len(data_errors)):
-        print(data_errors[i], ": ", data_checking[i])
+    for i in range(len(sf_config.data_errors)):
+        print(sf_config.data_errors[i], ": ", data_checking[i])
     print('Mean Frequency is: %f Hz' % (actual_length / total_trip_seconds))
 
     return np.array(x), np.array(y)
@@ -89,10 +88,10 @@ def gen_dataloader(x, y, test_size=0.2, random_state=0):
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_size, random_state=random_state)
 
     train_x = torch.Tensor(train_x)
-    train_y = F.one_hot(train_y.long(), len(config.classes)).to(torch.float32)
+    train_y = F.one_hot(train_y.long(), len(sf_config.classes)).to(torch.float32)
 
     test_x = torch.Tensor(test_x)
-    test_y = F.one_hot(test_y.long(), len(config.classes)).to(torch.float32)
+    test_y = F.one_hot(test_y.long(), len(sf_config.classes)).to(torch.float32)
 
     train_dataset = TensorDataset(train_x, train_y)
     test_dataset = TensorDataset(test_x, test_y)
@@ -103,8 +102,8 @@ def gen_dataloader(x, y, test_size=0.2, random_state=0):
     return train_loader, test_loader
 
 
-def train_model(model, train_loader, num_epochs=config.num_training_epochs, lr=config.learning_rate,
-                momentum=config.momentum):
+def train_model(model, train_loader, num_epochs=sf_config.num_training_epochs, lr=sf_config.learning_rate,
+                momentum=sf_config.momentum):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
@@ -120,8 +119,8 @@ def train_model(model, train_loader, num_epochs=config.num_training_epochs, lr=c
 
             output = [.0, .0, .0, .0]
             for data_row in training_input:
-                for i in range(0, len(data_row), config.n_training_cols):
-                    model_input = data_row[None, i:i + config.n_training_cols].float()
+                for i in range(0, len(data_row), sf_config.n_training_cols):
+                    model_input = data_row[None, i:i + sf_config.n_training_cols].float()
                     output, hidden = model(model_input, hidden)
 
             optimizer.zero_grad()
@@ -137,7 +136,7 @@ def train_model(model, train_loader, num_epochs=config.num_training_epochs, lr=c
 
     print("Training FINISHED")
 
-    torch.save(model.state_dict(), config.surfacemodel_path)
+    torch.save(model.state_dict(), sf_config.surfacemodel_path)
 
     return model, criterion
 
@@ -188,8 +187,8 @@ def train(model, dataframe):
     x, y = data_preparation(dataframe)
     train_loader, test_loader = gen_dataloader(x, y)
     model, criterion = train_model(model=model, train_loader=train_loader)
-    print_training_accuracy(model=model, train_loader=train_loader, criterion=criterion, classes=config.classes)
-    print_testing_accuracy(model=model, test_loader=test_loader, criterion=criterion, classes=config.classes)
+    print_training_accuracy(model=model, train_loader=train_loader, criterion=criterion, classes=sf_config.classes)
+    print_testing_accuracy(model=model, test_loader=test_loader, criterion=criterion, classes=sf_config.classes)
 
 
 def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
@@ -199,7 +198,6 @@ def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
     x = []
     id_list, time_list, lat_list, lon_list = [], [], [], []
     results = []
-    data_errors = ['GOOD', 'LONG', 'SHORT']
     data_checking = [0, 0, 0]
     total_trip_seconds, actual_length = len(grouped), 0
 
@@ -210,16 +208,16 @@ def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
         lon_list.append(table['longitude'].mean())
 
         train_input = table.drop(columns=['terrain', 'trip_id', 'crash', 'time_second', 'latitude', 'longitude'])
-        train_input, d_check = normalize_to_batch_length(train_input, config.batch_size * config.n_training_cols)
+        train_input, d_check = normalize_to_batch_length(train_input, sf_config.batch_size * sf_config.n_training_cols)
         x.append(train_input)
         data_checking = np.add(data_checking, d_check)
 
-    for i in range(len(data_errors)):
-        print(data_errors[i], ": ", data_checking[i])
+    for i in range(len(sf_config.data_errors)):
+        print(sf_config.data_errors[i], ": ", data_checking[i])
     print('Mean Frequency is: %f Hz' % (actual_length / total_trip_seconds))
 
-    model = rnn.RNN(config.n_training_cols, config.n_hidden_layers, len(config.classes))
-    model.load_state_dict(torch.load(config.surfacemodel_path))
+    model = rnn.RNN(sf_config.n_training_cols, sf_config.n_hidden_layers, len(sf_config.classes))
+    model.load_state_dict(torch.load(sf_config.surfacemodel_path))
     terrain_guess = util.predict_dataset(model=model, x=x)
 
     for i in range(len(id_list)):
@@ -233,13 +231,13 @@ def initiate(dataframe):
     if dataframe is None:
         dataframe = dp.get_dataframe()
 
-    model = rnn.RNN(config.n_training_cols, config.n_hidden_layers, len(config.classes))
+    model = rnn.RNN(sf_config.n_training_cols, sf_config.n_hidden_layers, len(sf_config.classes))
     train(model, dataframe)
 
 
 def continue_training(dataframe):
-    model = rnn.RNN(config.n_training_cols, config.n_hidden_layers, len(config.classes))
-    model.load_state_dict(torch.load(config.surfacemodel_path))
+    model = rnn.RNN(sf_config.n_training_cols, sf_config.n_hidden_layers, len(sf_config.classes))
+    model.load_state_dict(torch.load(sf_config.surfacemodel_path))
     train(model, dataframe)
 
 

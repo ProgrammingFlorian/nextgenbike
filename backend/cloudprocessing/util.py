@@ -1,6 +1,6 @@
 import torch
 
-from cloudprocessing.surfacemodel import config
+from cloudprocessing.surfacemodel import config as sf_config
 
 
 def predict(model, pred_input) -> torch.Tensor:
@@ -8,8 +8,8 @@ def predict(model, pred_input) -> torch.Tensor:
 
     output = [.0, .0, .0, .0]
     for data_row in pred_input:
-        for i in range(0, len(data_row), config.n_training_cols):
-            model_input = data_row[None, i:i + config.n_training_cols].float()
+        for i in range(0, len(data_row), sf_config.n_training_cols):
+            model_input = data_row[None, i:i + sf_config.n_training_cols].float()
             output, hidden = model(model_input, hidden)
 
     return output
@@ -17,7 +17,7 @@ def predict(model, pred_input) -> torch.Tensor:
 
 def compute_accuracy_rnn(model, loader, criterion):
     loss = 0.0
-    class_c, class_t = list(0. for _ in range(len(config.classes))), list(0. for _ in range(len(config.classes)))
+    class_c, class_t = list(0. for _ in range(len(sf_config.classes))), list(0. for _ in range(len(sf_config.classes)))
 
     model.eval()
     for i, (pred_input, target) in enumerate(loader):
