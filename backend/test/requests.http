@@ -1,5 +1,5 @@
 ### Create /user
-POST http://localhost:5000/users
+POST http://{{host}}/users
 Content-Type: application/json
 
 {
@@ -9,7 +9,7 @@ Content-Type: application/json
 
 ### Correct /trip/start
 
-POST http://localhost:5000/trip/start
+POST http://{{host}}/trip/start
 Content-Type: application/json
 
 {
@@ -19,7 +19,7 @@ Content-Type: application/json
 
 ### /trip/start wrong parameters
 
-POST http://localhost:5000/trip/start
+POST http://{{host}}/trip/start
 Content-Type: application/json
 
 {
@@ -29,16 +29,16 @@ Content-Type: application/json
 
 ### GET /sensor
 
-GET http://localhost:5000/sensor
+GET http://{{host}}/sensor
 
 ### Put /sensor
 
-PUT http://localhost:5000/sensor
+PUT http://{{host}}/sensor
 Content-Type: application/json
 
 {
-  "time": ["2014-12-22T03:12:58.019067+00:00", "2014-12-22T03:12:58.019057+00:00", "2014-12-22T03:12:58.019047+00:00", "2014-12-22T03:12:58.019037+00:00"],
-  "trip_id": 10,
+  "time": ["2014-12-21T03:12:58.019067+00:00", "2014-12-22T03:12:58.019057+00:00", "2014-12-22T03:12:58.019047+00:00", "2014-12-22T03:12:58.019037+00:00"],
+  "trip_id": 8,
   "vibration": [1.0, 0.5, 2.0, 5.0],
   "latitude": [-5, -4.9, -4.8, -4.7],
   "longitude": [1, 1.9, 2.8, 3.7],
@@ -52,7 +52,7 @@ Content-Type: application/json
 
 ### Put /sensor with crash and terrain
 
-PUT http://localhost:5000/sensor
+PUT http://{{host}}/sensor
 Content-Type: application/json
 
 {
@@ -72,22 +72,22 @@ Content-Type: application/json
 }
 
 ### Get terrain
-POST http://localhost:5000/terrain
+POST http://{{host}}/terrain
 Content-Type: application/json
 
 {
 }
 
 ### Get trips
-GET http://localhost:5000/trips
+GET http://{{host}}/trips
 
 ### Get users
-GET http://localhost:5000/users
+GET http://{{host}}/users
 
 ### Get sql
-GET http://localhost:5000/sql
+GET http://{{host}}/sql
 
 ### Post retrain
-POST http://localhost:5000/retrain
+POST http://{{host}}/retrain
 
 ### Post sensor
