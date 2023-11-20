@@ -29,7 +29,8 @@ def test_data_preparation_norm_len(example_dataframe):
 ])
 @mock.patch('cloudprocessing.surfacemodel.surfacemodel.torch.save')
 def test_sf_runs(torch_save, example_dataframe):
+    exists = os.path.exists(sf_config.surfacemodel_path)
     sf.initiate(example_dataframe)
 
     torch_save.assert_called_once()
-    assert not os.path.exists(sf_config.surfacemodel_path)
+    assert exists == os.path.exists(sf_config.surfacemodel_path)
