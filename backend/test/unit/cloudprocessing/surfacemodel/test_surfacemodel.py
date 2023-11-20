@@ -11,7 +11,7 @@ from test.unit.cloudprocessing.surfacemodel import single_element_dataframe, sin
 
 def test_group_trip_second_no_terrain():
     with pytest.raises(Exception):
-        sf.group_trip_second(single_element_dataframe("null"))
+        sf.data_preparation(single_element_dataframe("null"))
 
 
 @pytest.mark.parametrize("example_dataframe", [

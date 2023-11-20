@@ -18,10 +18,6 @@ from cloudprocessing import dataprocessing as dp
 
 
 def group_trip_second(df: DataFrame):
-    df.dropna(subset=['terrain'], inplace=True)
-    if df.size == 0:
-        raise Exception("No target values (terrain) in DataFrame found")
-
     df['time_second'] = df['time'].map(lambda x: pd.Timestamp(x).floor(freq='S'))
     df['time'] = df['time'].map(pd.Timestamp.timestamp)
 
@@ -43,15 +39,17 @@ def normalize_to_batch_length(df: DataFrame, length):
         datacheck[1] = 1
     else:
         datacheck[2] = 1
-        for _ in range(length - len(array)):
-            fake_array = [1] * (length - len(array))
-            array = np.append(array, fake_array)
+        fake_array = [1] * (length - len(array))
+        array = np.append(array, fake_array)
     array = array[:length].flatten()
 
     return array, datacheck
 
 
 def data_preparation(df: DataFrame):
+    df.dropna(subset=['terrain'], inplace=True)
+    if df.size == 0:
+        raise Exception("No target values (terrain) in DataFrame found")
     grouped = group_trip_second(df)
 
     x, y = [], []
@@ -113,14 +111,9 @@ def train_model(model, train_loader, num_epochs=sf_config.num_training_epochs, l
         total_train_loss = 0  # initialize the total training and validation loss
 
         for i, (training_input, target) in enumerate(train_loader):  # loop over the training set
-            hidden = model.init_hidden()
             model.zero_grad()
 
-            output = [.0, .0, .0, .0]
-            for data_row in training_input:
-                for j in range(0, len(data_row), sf_config.n_training_cols):
-                    model_input = data_row[None, j:j + sf_config.n_training_cols].float()
-                    output, hidden = model(model_input, hidden)
+            output = util.predict(model, training_input)
 
             optimizer.zero_grad()
             loss = criterion(output, target)
@@ -190,15 +183,14 @@ def train(model, dataframe):
     print_testing_accuracy(model=model, test_loader=test_loader, criterion=criterion, classes=sf_config.classes)
 
 
-def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
-    dataframe = dp.format_time(dataframe)
-    grouped = group_trip_second(dataframe)
+def predict_data_preparation(df):
+    grouped = group_trip_second(df)
+
+    data_checking = [0, 0, 0]
+    total_trip_seconds, actual_length = len(grouped), 0
 
     x = []
     id_list, time_list, lat_list, lon_list = [], [], [], []
-    results = []
-    data_checking = [0, 0, 0]
-    total_trip_seconds, actual_length = len(grouped), 0
 
     for i, (trip_seconds, table) in enumerate(grouped):
         id_list.append(trip_seconds[0])
@@ -215,10 +207,29 @@ def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
         print(sf_config.data_errors[i], ": ", data_checking[i])
     print('Mean Frequency is: %f Hz' % (actual_length / total_trip_seconds))
 
+    return np.array(x), id_list, time_list, lat_list, lon_list
+
+
+def predict_generate_data_loaders(x):
+    x = torch.Tensor(torch.tensor(x))
+    y = F.one_hot(torch.zeros(len(x)).long(), len(sf_config.classes)).to(torch.float32)
+    dataset = TensorDataset(x, y)
+    return DataLoader(dataset)
+
+
+def predict_df(dataframe: DataFrame) -> list[dict[str, Any]]:
+    dataframe = dp.format_time(dataframe)
+
+    x, id_list, time_list, lat_list, lon_list = predict_data_preparation(dataframe)
+
+    loader = predict_generate_data_loaders(x)
+
     model = rnn.RNN(sf_config.n_training_cols, sf_config.n_hidden_layers, len(sf_config.classes))
     model.load_state_dict(torch.load(sf_config.surfacemodel_path))
-    terrain_guess = util.predict_dataset(model=model, x=x)
 
+    terrain_guess = util.predict_dataset(model=model, x=loader)
+
+    results = []
     for i in range(len(id_list)):
         results.append({"trip_id": id_list[i], "time": time_list[i], "latitude": lat_list[i], "longitude": lon_list[i],
                         "terrain": terrain_guess[i]})

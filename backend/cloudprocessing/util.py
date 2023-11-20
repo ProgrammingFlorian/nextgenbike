@@ -37,7 +37,7 @@ def compute_accuracy_rnn(model, loader, criterion):
 def predict_dataset(model, x):
     model.eval()
     predictions = []
-    for pred_input in x:
+    for i, (pred_input, _) in enumerate(x):
         output = predict(model, pred_input)
 
         # convert output probabilities to predicted class
