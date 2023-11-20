@@ -23,7 +23,7 @@ def create_trip(name, user_id) -> Trip:
     db.session.add(trip)
     db.session.commit()
 
-    return Trip()
+    return trip
 
 
 def end_trip(trip_id) -> Trip:
@@ -32,7 +32,7 @@ def end_trip(trip_id) -> Trip:
 
     db.session.commit()
 
-    return trip()
+    return trip
 
 
 def put_sensor_data(sensor_data):
