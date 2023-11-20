@@ -145,7 +145,7 @@ def get_terrain():
     else:
         terrain = dbf.get_terrain_data_by_trip_id(request_data['trip_id'])
 
-    return utils.dict_array_as_json(terrain), 200
+    return terrain, 200
 
 
 @url.route('/retrain', methods=['POST'])
