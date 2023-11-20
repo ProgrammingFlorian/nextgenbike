@@ -6,6 +6,8 @@ batch_size = 10
 n_training_cols = 8
 n_hidden_layers = 256
 
+data_errors = ['GOOD', 'LONG', 'SHORT']
+
 surfacemodel_path = "surfacemodel"
 
 
