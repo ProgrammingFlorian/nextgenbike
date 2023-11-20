@@ -54,8 +54,8 @@ def get_sensor_data_between(start, end):
 
 def put_terrain_data(terrain_data):
     for data in terrain_data:
-        r = Terrain(data['time'], data['trip_id'], data['latitude'], data['longitude'],
-                    data['terrain'])
+        r = Terrain(time=data['time'], trip_id=data['trip_id'], latitude=data['latitude'], longitude=data['longitude'],
+                    terrain=data['terrain'])
         db.session.add(r)
     db.session.commit()
 
