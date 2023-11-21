@@ -44,6 +44,7 @@ def put_sensor_data(sensor_data):
                              acceleration_y=sensor_data['acceleration_y'][i],
                              acceleration_z=sensor_data['acceleration_z'][i], gyroscope_x=sensor_data['gyroscope_x'][i],
                              gyroscope_y=sensor_data['gyroscope_y'][i], gyroscope_z=sensor_data['gyroscope_z'][i])
+        print(f"date: {sensor_row.time}")
         db.session.add(sensor_row)
     db.session.commit()
 

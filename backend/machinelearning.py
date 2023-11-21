@@ -29,7 +29,7 @@ def try_to_predict():
     current_time = datetime.datetime.now().replace(microsecond=0)
     relevant_time_ago = current_time - datetime.timedelta(seconds=10)
     if last_time_pred < relevant_time_ago:
-        print("getting sensor data..")
+        print(f"getting sensor data.. cur: {current_time} relevant: {relevant_time_ago}")
         last_time_pred = datetime.datetime.now()
 
         data = dbf.get_sensor_data_between(relevant_time_ago, current_time)
