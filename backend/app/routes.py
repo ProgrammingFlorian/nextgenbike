@@ -118,9 +118,7 @@ def put_sensor_data():
 
     dbf.put_sensor_data(request_data)
 
-    print("trying to predict..")
     ml.try_to_predict()
-    print("done")
     # pred_process = Process(target=ml.try_to_predict, daemon=True)
     # pred_process.start()
 
@@ -147,7 +145,6 @@ def get_terrain():
     else:
         terrain = dbf.get_terrain_data_by_trip_id(request_data['trip_id'])
 
-    print(terrain)
     return terrain, 200
 
 

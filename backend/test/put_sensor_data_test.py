@@ -9,13 +9,11 @@ if dev:
 else:
     host = "104.248.148.208"
 
-now = datetime.now() + timedelta(hours=1)
+now = datetime.now() - timedelta(hours=8)
 now1 = now.strftime("%Y-%m-%dT%H:%M:%S.000000+00:00")
 now2 = (now - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%S.000000+00:00")
 now3 = (now - timedelta(seconds=2)).strftime("%Y-%m-%dT%H:%M:%S.000000+00:00")
 now4 = (now - timedelta(seconds=3)).strftime("%Y-%m-%dT%H:%M:%S.000000+00:00")
-
-print(now)
 
 result = requests.put(f"http://{host}/sensor", json=(
     {"time": [now1, now2, now3, now4], "trip_id": 11, "vibration": [1.0, 0.5, 2.0, 5.0],

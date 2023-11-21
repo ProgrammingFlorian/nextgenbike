@@ -29,16 +29,13 @@ def try_to_predict():
     current_time = datetime.datetime.now().replace(microsecond=0)
     relevant_time_ago = current_time - datetime.timedelta(seconds=10)
     if last_time_pred < relevant_time_ago:
-        print(f"getting sensor data.. cur: {current_time} relevant: {relevant_time_ago}")
         last_time_pred = datetime.datetime.now()
 
         data = dbf.get_sensor_data_between(relevant_time_ago, current_time)
         data_json = utils.dict_array_as_json(data)
-        print(f"data: {data_json}")
 
         predictions = predict_on_data(data_json)
 
-        print(f"predictions: {predictions}")
         dbf.put_terrain_data(predictions)
 
 
