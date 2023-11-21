@@ -61,7 +61,7 @@ def put_terrain_data(terrain_data):
 
 
 def get_sensor_data() -> [Sensors]:
-    return Sensors.query.all()
+    return Sensors.query.order_by(Sensors.time.desc()).limit(100).all()
 
 
 def get_trip_data() -> [Trip]:
