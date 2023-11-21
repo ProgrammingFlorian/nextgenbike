@@ -10,10 +10,10 @@ else:
     host = "104.248.148.208"
 
 now = datetime.now()
-now1 = now.strftime("%Y-%m-%dT%H:%M:%S.000000+01:00")
-now2 = (now - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%S.000000+01:00")
-now3 = (now - timedelta(seconds=2)).strftime("%Y-%m-%dT%H:%M:%S.000000+01:00")
-now4 = (now - timedelta(seconds=3)).strftime("%Y-%m-%dT%H:%M:%S.000000+01:00")
+now1 = now.strftime("%Y-%m-%dT%H:%M:%S.000000+00:00")
+now2 = (now - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%S.000000+00:00")
+now3 = (now - timedelta(seconds=2)).strftime("%Y-%m-%dT%H:%M:%S.000000+00:00")
+now4 = (now - timedelta(seconds=3)).strftime("%Y-%m-%dT%H:%M:%S.000000+00:00")
 
 print(now)
 
